@@ -71,7 +71,8 @@ class _LogSyncer(object):
         self.remote_dir = remote_dir
         self.last_sync_time = 0
         self.sync_process = None
-        self.local_ip = ray.services.get_node_ip_address()
+        # TODO(rliaw): Fix this
+        self.local_ip = None # ray.services.get_node_ip_address()
         self.worker_ip = None
         print("Created LogSyncer for {} -> {}".format(local_dir, remote_dir))
 
