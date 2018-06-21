@@ -36,14 +36,12 @@ class Trial(object):
                  param_map=None):
         base_dir = os.path.expanduser(log_dir)
         self.base_dir = base_dir
-        # This is a generic folder for
         self.data_dir = os.path.join(base_dir, METADATA_FOLDER)
         self.trial_id = uuid.uuid1().hex[:10]
         if trial_prefix:
             self.trial_id = "_".join([trial_prefix, self.trial_id])
 
         self._sync_period = sync_period
-        # artifact_dir holds the artifacts
         self.artifact_dir = os.path.join(base_dir, self.trial_id)
         self.upload_dir = upload_dir
         self.param_map = param_map or {}

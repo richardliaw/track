@@ -2,7 +2,7 @@ class Project(object):
     """
     The project class manages all trials that have been run with the given
     log_dir and upload_dir. It gives pandas-dataframe access to trial metadata,
-    metrics, and then path-based access to stored user artifacts for each trial.
+    metrics, and then path-based access to stored user artifacts for each trial
     """
 
     def __init__(self, log_dir, upload_dir=""):

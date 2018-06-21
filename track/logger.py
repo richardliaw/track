@@ -56,7 +56,7 @@ class UnifiedLogger(Logger):
     This class also periodically syncs output to the given upload uri."""
     def _init(self):
         self._loggers = {}
-        for cls in [_JsonLogger, _TFLogger]:  #, _VisKitLogger]:
+        for cls in [_JsonLogger, _TFLogger]:
             if cls is _TFLogger and tf is None:
                 print("TF not installed - cannot log with {}...".format(cls))
                 continue
@@ -70,7 +70,6 @@ class UnifiedLogger(Logger):
     def close(self):
         for logger in self._loggers.values():
             logger.close()
-
 
 
 class NoopLogger(Logger):
@@ -130,20 +129,6 @@ class _TFLogger(Logger):
 
     def close(self):
         self._file_writer.close()
-
-
-# class _VisKitLogger(Logger):
-#     def _init(self):
-#         # Note that we assume params.json was already created by _JsonLogger
-#         self._file = open(os.path.join(self.logdir, self.filename_prefix + "progress.csv"), "w")
-#         self._csv_out = csv.DictWriter(self._file, TrainingResult._fields)
-#         self._csv_out.writeheader()
-
-#     def on_result(self, result):
-#         self._csv_out.writerow(result)
-
-#     def close(self):
-#         self._file.close()
 
 
 class _CustomEncoder(json.JSONEncoder):
