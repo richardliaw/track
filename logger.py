@@ -10,6 +10,7 @@ import yaml
 
 from ray.tune.result import TrainingResult
 from ray.tune.log_sync import get_syncer
+from track.constants import CONFIG_SUFFIX
 
 try:
     import tensorflow as tf
@@ -87,14 +88,14 @@ class NoopLogger(Logger):
 
 class _JsonLogger(Logger):
     def _init(self):
-        config_out = os.path.join(self.logdir, "params.json")
+        config_out = os.path.join(self.logdir, "CONFIG_SUFFIX")
         with open(config_out, "w") as f:
             json.dump(self.config, f, sort_keys=True, cls=_CustomEncoder)
         local_file = os.path.join(self.logdir, "result.json")
         self.local_out = open(local_file, "w")
 
     def on_result(self, result):
-        json.dump(result._asdict(), self, cls=_CustomEncoder)
+        json.dump(result, self, cls=_CustomEncoder)
         self.write("\n")
 
     def write(self, b):
@@ -118,22 +119,22 @@ def to_tf_values(result, path):
     return values
 
 
-class _TFLogger(Logger):
-    def _init(self):
-        self._file_writer = tf.summary.FileWriter(self.logdir)
+# class _TFLogger(Logger):
+    # def _init(self):
+    #     self._file_writer = tf.summary.FileWriter(self.logdir)
 
-    def on_result(self, result):
-        tmp = result._asdict()
-        for k in [
-                "config", "pid", "timestamp", "time_total_s", "timesteps_total"
-        ]:
-            del tmp[k]  # not useful to tf log these
-        values = to_tf_values(tmp, ["ray", "tune"])
-        train_stats = tf.Summary(value=values)
-        self._file_writer.add_summary(train_stats, result.timesteps_total)
+    # def on_result(self, result):
+    #     tmp = result._asdict()
+    #     for k in [
+    #             "config", "pid", "timestamp", "time_total_s", "timesteps_total"
+    #     ]:
+    #         del tmp[k]  # not useful to tf log these
+    #     values = to_tf_values(tmp, ["ray", "tune"])
+    #     train_stats = tf.Summary(value=values)
+    #     self._file_writer.add_summary(train_stats, result.timesteps_total)
 
-    def close(self):
-        self._file_writer.close()
+    # def close(self):
+    #     self._file_writer.close()
 
 
 class _VisKitLogger(Logger):
@@ -144,7 +145,7 @@ class _VisKitLogger(Logger):
         self._csv_out.writeheader()
 
     def on_result(self, result):
-        self._csv_out.writerow(result._asdict())
+        self._csv_out.writerow(result)
 
     def close(self):
         self._file.close()
