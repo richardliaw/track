@@ -1,6 +1,9 @@
 class Trial(object):
-    def __init__(self, project_name, params_dict):
-        pass
+    def __init__(self, project_name, logdir, upload_dir="", params_dict):
+        self.project_name = project_name
+        self.logdir = logdir
+        self.upload_dir = upload_dir
+        self.params_dict = params_dict
 
     def start(self):
         pass
