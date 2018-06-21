@@ -12,10 +12,10 @@ try:  # py3
 except ImportError:  # py2
     from pipes import quote
 
-import ray
-from ray.tune.cluster_info import get_ssh_key, get_ssh_user
-from ray.tune.error import TuneError
-from ray.tune.result import DEFAULT_RESULTS_DIR
+# import ray
+# from ray.tune.cluster_info import get_ssh_key, get_ssh_user
+# from ray.tune.error import TuneError
+# from ray.tune.result import DEFAULT_RESULTS_DIR
 
 # Map from (logdir, remote_dir) -> syncer
 _syncers = {}

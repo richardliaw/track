@@ -2,18 +2,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import csv
 import json
 import numpy as np
 import os
 import yaml
 
-from ray.tune.result import TrainingResult
-from ray.tune.log_sync import get_syncer
+from track.sync import get_syncer
 from track.constants import CONFIG_SUFFIX
 
 try:
-    import tensorflow as tf
+    # import tensorflow as tf
+    pass
 except ImportError:
     tf = None
     print("Couldn't import TensorFlow - this disables TensorBoard logging.")
@@ -58,7 +57,7 @@ class UnifiedLogger(Logger):
 
     def _init(self):
         self._loggers = []
-        for cls in [_JsonLogger, _TFLogger, _VisKitLogger]:
+        for cls in [_JsonLogger, _TFLogger]:#, _VisKitLogger]:
             if cls is _TFLogger and tf is None:
                 print("TF not installed - cannot log with {}...".format(cls))
                 continue
@@ -88,7 +87,7 @@ class NoopLogger(Logger):
 
 class _JsonLogger(Logger):
     def _init(self):
-        config_out = os.path.join(self.logdir, "CONFIG_SUFFIX")
+        config_out = os.path.join(self.logdir, CONFIG_SUFFIX)
         with open(config_out, "w") as f:
             json.dump(self.config, f, sort_keys=True, cls=_CustomEncoder)
         local_file = os.path.join(self.logdir, "result.json")
@@ -119,36 +118,36 @@ def to_tf_values(result, path):
     return values
 
 
-# class _TFLogger(Logger):
-    # def _init(self):
-    #     self._file_writer = tf.summary.FileWriter(self.logdir)
-
-    # def on_result(self, result):
-    #     tmp = result._asdict()
-    #     for k in [
-    #             "config", "pid", "timestamp", "time_total_s", "timesteps_total"
-    #     ]:
-    #         del tmp[k]  # not useful to tf log these
-    #     values = to_tf_values(tmp, ["ray", "tune"])
-    #     train_stats = tf.Summary(value=values)
-    #     self._file_writer.add_summary(train_stats, result.timesteps_total)
-
-    # def close(self):
-    #     self._file_writer.close()
-
-
-class _VisKitLogger(Logger):
+class _TFLogger(Logger):
     def _init(self):
-        # Note that we assume params.json was already created by JsonLogger
-        self._file = open(os.path.join(self.logdir, "progress.csv"), "w")
-        self._csv_out = csv.DictWriter(self._file, TrainingResult._fields)
-        self._csv_out.writeheader()
+        self._file_writer = tf.summary.FileWriter(self.logdir)
 
     def on_result(self, result):
-        self._csv_out.writerow(result)
+        tmp = result.copy()
+        for k in [
+                "config", "pid", "timestamp", "time_total_s", "iteration"
+        ]:
+            del tmp[k]  # not useful to tf log these
+        values = to_tf_values(tmp, ["ray", "tune"])
+        train_stats = tf.Summary(value=values)
+        self._file_writer.add_summary(train_stats, result["iteration"])
 
     def close(self):
-        self._file.close()
+        self._file_writer.close()
+
+
+# class _VisKitLogger(Logger):
+#     def _init(self):
+#         # Note that we assume params.json was already created by JsonLogger
+#         self._file = open(os.path.join(self.logdir, "progress.csv"), "w")
+#         self._csv_out = csv.DictWriter(self._file, TrainingResult._fields)
+#         self._csv_out.writeheader()
+
+#     def on_result(self, result):
+#         self._csv_out.writerow(result)
+
+#     def close(self):
+#         self._file.close()
 
 
 class _CustomEncoder(json.JSONEncoder):
