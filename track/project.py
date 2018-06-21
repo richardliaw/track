@@ -1,4 +1,3 @@
-
 class Project(object):
     """
     The project class manages all trials that have been run with the given
