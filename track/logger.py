@@ -7,7 +7,6 @@ import numpy as np
 import os
 import yaml
 
-from track.sync import get_syncer
 from track.constants import CONFIG_SUFFIX, RESULT_SUFFIX
 
 try:
@@ -19,7 +18,7 @@ except ImportError:
 
 
 class Logger(object):
-    """Logging interface for ray.tune; specialized implementations follow.
+    """Logging interface.
 
     By default, the UnifiedLogger implementation is used which logs results in
     multiple formats (TensorBoard, rllab/viskit, plain json) at once.
@@ -55,30 +54,22 @@ class UnifiedLogger(Logger):
     """Unified result logger for TensorBoard, rllab/viskit, plain json.
 
     This class also periodically syncs output to the given upload uri."""
-
     def _init(self):
         self._loggers = {}
-        for cls in [_JsonLogger, _TFLogger]:#, _VisKitLogger]:
+        for cls in [_JsonLogger, _TFLogger]:
             if cls is _TFLogger and tf is None:
                 print("TF not installed - cannot log with {}...".format(cls))
                 continue
-            self._loggers[cls.__name__] = cls(self.config, self.logdir, self.filename_prefix, self.uri)
-        self._log_syncer = get_syncer(self.logdir, self.uri)
+            self._loggers[cls.__name__] = cls(self.config, self.logdir,
+                                              self.filename_prefix, self.uri)
 
     def on_result(self, result):
         for logger in self._loggers.values():
             logger.on_result(result)
-        # self._log_syncer.set_worker_ip(result.node_ip)
-        # self._log_syncer.sync_if_needed()
 
     def close(self):
         for logger in self._loggers.values():
             logger.close()
-        self._log_syncer.sync_now(force=True)
-
-    def flush(self):
-        self._log_syncer.sync_now(force=True)
-        self._log_syncer.wait()
 
 
 class NoopLogger(Logger):
@@ -88,10 +79,12 @@ class NoopLogger(Logger):
 
 class _JsonLogger(Logger):
     def _init(self):
-        config_out = os.path.join(self.logdir, CONFIG_SUFFIX)
+        config_out = os.path.join(self.logdir,
+                                  self.filename_prefix + CONFIG_SUFFIX)
         with open(config_out, "w") as f:
             json.dump(self.config, f, sort_keys=True, cls=_CustomEncoder)
-        local_file = os.path.join(self.logdir, self.filename_prefix + RESULT_SUFFIX)
+        local_file = os.path.join(self.logdir,
+                                  self.filename_prefix + RESULT_SUFFIX)
         self.local_out = open(local_file, "w")
 
     def on_result(self, result):
@@ -128,9 +121,7 @@ class _TFLogger(Logger):
 
     def on_result(self, result):
         tmp = result.copy()
-        for k in [
-                "config", "pid", "timestamp", "time_total_s", "iteration"
-        ]:
+        for k in ["config", "pid", "timestamp", "time_total_s", "iteration"]:
             del tmp[k]  # not useful to tf log these
         values = to_tf_values(tmp, ["ray", "tune"])
         train_stats = tf.Summary(value=values)
@@ -138,20 +129,6 @@ class _TFLogger(Logger):
 
     def close(self):
         self._file_writer.close()
-
-
-# class _VisKitLogger(Logger):
-#     def _init(self):
-#         # Note that we assume params.json was already created by _JsonLogger
-#         self._file = open(os.path.join(self.logdir, self.filename_prefix + "progress.csv"), "w")
-#         self._csv_out = csv.DictWriter(self._file, TrainingResult._fields)
-#         self._csv_out.writeheader()
-
-#     def on_result(self, result):
-#         self._csv_out.writerow(result)
-
-#     def close(self):
-#         self._file.close()
 
 
 class _CustomEncoder(json.JSONEncoder):

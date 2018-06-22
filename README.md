@@ -1,7 +1,7 @@
 # track
 
 ## Installation
-`pip install track`
+`pip install track` (Not yet)
 
 ## Usage
 
@@ -9,13 +9,13 @@
 import track 
 
 def training_function():
-    trial = track.Trial("ProjectName", "~/results")
+    trial = track.Trial("~/results", "remote_dir")
     trial.start()
     for i in range(N):
         # train model ...
-        trial.log_metric()
+        trial.metric()
         
-    trial.end()
+    trial.close()
 ```
         
     
