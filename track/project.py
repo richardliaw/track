@@ -1,3 +1,4 @@
+import os
 
 class Project(object):
     """
@@ -6,11 +7,15 @@ class Project(object):
     metrics, and then path-based access to stored user artifacts for each trial.
     """
 
-    def __init__(self, log_dir, upload_dir=""):
+    def __init__(self, log_dir, upload_dir=None):
         self.log_dir = log_dir
         self.upload_dir = upload_dir
         self._sync_metadata()
-        self.ids = self._load_metadata()
+        self._ids = self._load_metadata()
+
+    @property
+    def ids(self):
+        return self._ids
 
     def results(self, trial_ids):
         """
@@ -26,3 +31,16 @@ class Project(object):
         metric_schema_union.
         """
         return
+
+    def fetch_artifact(self, trial_id, prefix):
+        """
+        Verifies that all children of the artifact prefix path are
+        available locally. Fetches them if not.
+
+        Returns the local path to the given trial's artifacts at the
+        specified prefix, which is always just
+
+        {log_dir}/{trial_id}/{prefix}
+        """
+
+        return os.path.join(self.log_dir, trial_id, prefix)
