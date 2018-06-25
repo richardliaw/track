@@ -56,10 +56,7 @@ class UnifiedLogger(Logger):
     This class also periodically syncs output to the given upload uri."""
     def _init(self):
         self._loggers = {}
-        for cls in [_JsonLogger, _TFLogger]:
-            if cls is _TFLogger and tf is None:
-                print("TF not installed - cannot log with {}...".format(cls))
-                continue
+        for cls in [_JsonLogger]:
             self._loggers[cls.__name__] = cls(self.config, self.logdir,
                                               self.filename_prefix, self.uri)
 
@@ -114,21 +111,6 @@ def to_tf_values(result, path):
                 values.extend(to_tf_values(value, path + [attr]))
     return values
 
-
-class _TFLogger(Logger):
-    def _init(self):
-        self._file_writer = tf.summary.FileWriter(self.logdir)
-
-    def on_result(self, result):
-        tmp = result.copy()
-        for k in ["config", "pid", "timestamp", "time_total_s", "iteration"]:
-            del tmp[k]  # not useful to tf log these
-        values = to_tf_values(tmp, ["ray", "tune"])
-        train_stats = tf.Summary(value=values)
-        self._file_writer.add_summary(train_stats, result["iteration"])
-
-    def close(self):
-        self._file_writer.close()
 
 
 class _CustomEncoder(json.JSONEncoder):
