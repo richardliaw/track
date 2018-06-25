@@ -1,4 +1,14 @@
+try:  # py3
+    from shlex import quote
+except ImportError:  # py2
+    from pipes import quote
 import os
+import subprocess
+import json
+
+import .constants
+
+from .sync import S3_PREFIX, GCS_PREFIX, check_remote_util
 
 class Project(object):
     """
@@ -7,8 +17,9 @@ class Project(object):
     metrics, and then path-based access to stored user artifacts for each trial.
     """
 
-    def __init__(self, log_dir, upload_dir=None):
+    def __init__(self, log_dir, upload_dir):
         self.log_dir = log_dir
+        check_remote_util(upload_dir)
         self.upload_dir = upload_dir
         self._sync_metadata()
         self._ids = self._load_metadata()
@@ -30,7 +41,18 @@ class Project(object):
         Then, every metric name that was ever logged is a column in the
         metric_schema_union.
         """
-        return
+        metadata_folder = os.path.join(self.log_dir, constants.METADATA_FOLDER)
+        dfs = []
+        for trial_id in trial_ids:
+            # TODO constants should just contain the recipes for filename
+            # construction instead of this multi-file implicit constraint
+            result_file = os.path.join(
+                metadata_folder, trial_id + "_" + constants.RESULT_SUFFIX)
+            assert os.path.isfile(result_file), result_file
+            dfs.append(pd.read_json(result_file, typ='frame'))
+        df = pd.concat(rows, axis=0, ignore_index=True)
+        return df
+
 
     def fetch_artifact(self, trial_id, prefix):
         """
@@ -42,5 +64,40 @@ class Project(object):
 
         {log_dir}/{trial_id}/{prefix}
         """
+        # TODO: general windows concern: local prefix will be in
+        # backslashes but remote dirs will be expecting /
+        # TODO: having s3 logic split between project and sync.py
+        # worries me
+        remote = '/'.join([self.upload_dir, trial_id, prefix])
+        local = os.path.join(self.log_dir, trial_id, prefix)
+        _remote_to_local_sync(remote, local)
+        return local
 
-        return os.path.join(self.log_dir, trial_id, prefix)
+    def _sync_metadata(self):
+        remote = '/'.join([self.upload_dir, constants.METADATA_FOLDER])
+        local = os.path.join(self.log_dir, constants.METADATA_FOLDER)
+        _remote_to_local_sync(remote, local)
+
+    def _load_metadata(self):
+        metadata_folder = os.path.join(self.log_dir, constants.METADATA_FOLDER)
+        rows = []
+        for trial_file in os.listdir(metadata_folder):
+            if not trial_file.endswith(constants.CONFIG_SUFFIX):
+                continue
+            trial_file = os.path.join(metadata_folder, trial_file)
+            rows.append(pd.read_json(trial_file, typ='series'))
+        self._ids = pd.concat(rows, axis=1)
+
+def _remote_to_local_sync(remote, local):
+    # TODO: at some point look up whether sync will clobber newer
+    # local files and do this more delicately
+    if remote.startswith(S3_PREFIX):
+        remote_to_local_sync_cmd = ("aws s3 sync {} {}".format(
+            quote(remote), quote(local)))
+    elif remote.startswith(GCS_PREFIX):
+        remote_to_local_sync_cmd = ("gsutil rsync -r {} {}".format(
+            quote(remote), quote(local)))
+    else:
+        raise ValueError('unhandled remote uri {}'.format(remote))
+    print("Running log sync: {}".format(remote_to_local_sync_cmd))
+    subprocess.check_call(remote_to_local_sync_cmd, shell=True)

@@ -45,6 +45,7 @@ class Trial(object):
         self.artifact_dir = os.path.join(base_dir, self.trial_id)
         self.upload_dir = upload_dir
         self.param_map = param_map or {}
+        self.param_map["trial_id"] = self.trial_id
 
     def start(self):
         for path in [self.base_dir, self.data_dir, self.artifact_dir]:
@@ -59,6 +60,8 @@ class Trial(object):
                 filename_prefix=self.trial_id + "_"))
 
         if self.upload_dir:
+            # note weird interaction here if user edits an artifact,
+            # that would eventually get synced.
             self._hooks.append(SyncHook(
                 self.base_dir,
                 remote_dir=self.upload_dir,
@@ -67,6 +70,7 @@ class Trial(object):
     def metric(self, *, iteration=None, **kwargs):
         new_args = flatten_dict(kwargs)
         new_args.update({"iteration": iteration})
+        new_args.update({"trial_id": self.trial_id})
         for hook in self._hooks:
             hook.on_result(new_args)
 
@@ -74,6 +78,7 @@ class Trial(object):
         srcpath = os.path.expanduser(src)
         # Copy filepath to the base_dir
         destpath = os.path.join(self.artifact_dir, artifact_name)
+        os.path.makedirs(os.path.dirname(artifact_name), exist_ok=True)
         shutil.copy(srcpath, destpath)
 
     def close(self):
