@@ -7,7 +7,7 @@ import numpy as np
 import os
 import yaml
 
-from track.constants import CONFIG_SUFFIX, RESULT_SUFFIX
+from tracker.constants import CONFIG_SUFFIX, RESULT_SUFFIX
 
 try:
     # import tensorflow as tf

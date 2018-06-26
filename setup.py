@@ -1,6 +1,6 @@
 from setuptools import setup
 
 setup(
-    name="track",
+    name="tracker",
     author="RISE"
 )

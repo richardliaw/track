@@ -1,10 +1,10 @@
 import os
-from track.logger import UnifiedLogger
-from track.sync import SyncHook
+from tracker.logger import UnifiedLogger
+from tracker.sync import SyncHook
 import uuid
 import shutil
 from datetime import datetime
-from track.constants import METADATA_FOLDER, RESULT_SUFFIX
+from tracker.constants import METADATA_FOLDER, RESULT_SUFFIX
 
 
 def time_str():
