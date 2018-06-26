@@ -11,7 +11,7 @@ try:  # py3
 except ImportError:  # py2
     from pipes import quote
 
-from tracker.error import TrackError
+from track.error import TrackError
 
 S3_PREFIX = "s3://"
 GCS_PREFIX = "gs://"

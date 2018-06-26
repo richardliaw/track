@@ -1,8 +1,8 @@
 from setuptools import setup
 
 setup(
-    name="tracker",
+    name="track",
     author="RISE",
-    packages=["tracker"],
-    package_dir={"tracker": "tracker"}
+    packages=["track"],
+    package_dir={"track": "track"}
 )
