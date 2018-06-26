@@ -5,7 +5,24 @@
 `pip install tracker` (Not yet). Until we get pypi set up, use
 
 ```
-pip install git+git://github.com/richardliaw/tracker.git#egg=tracker
+pip install --upgrade git+git://github.com/richardliaw/tracker.git#egg=tracker
+```
+
+Or if your project has a `setup.py`, it should contain the following:
+
+```
+
+install_requires = [
+    # ...
+    'tracker',                                                                                ]
+
+setup(name="your_package_name",
+      install_requires=install_requires,
+      dependency_links=[
+setup(name="asn4sql", author="RISE Lab",
+      install_requires=install_requires,
+      dependency_links=[
+          'https://github.com/richardliaw/tracker/archive/master.zip#egg=tracker',])
 ```
 
 ## Usage
