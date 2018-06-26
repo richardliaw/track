@@ -1,15 +1,15 @@
-# track
+# tracker
 
 ## Installation
-`pip install track` (Not yet)
+`pip install tracker` (Not yet)
 
 ## Usage
 
 ```
-import track 
+import tracker 
 
 def training_function():
-    trial = track.Trial("~/results", "remote_dir")
+    trial = tracker.Trial("~/results", "remote_dir")
     trial.start()
     for i in range(N):
         # train model ...
