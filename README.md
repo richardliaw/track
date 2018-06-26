@@ -1,7 +1,12 @@
 # tracker
 
 ## Installation
-`pip install tracker` (Not yet)
+
+`pip install tracker` (Not yet). Until we get pypi set up, use
+
+```
+pip install git+git://github.com/richardliaw/tracker.git#egg=tracker
+```
 
 ## Usage
 

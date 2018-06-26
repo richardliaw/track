@@ -2,5 +2,7 @@ from setuptools import setup
 
 setup(
     name="tracker",
-    author="RISE"
+    author="RISE",
+    packages=["tracker"],
+    package_dir={"tracker": "tracker"}
 )
