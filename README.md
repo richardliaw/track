@@ -5,7 +5,7 @@
 `pip install track` (Not yet). Until we get pypi set up (there's another `track` package...), use
 
 ```
-pip install --upgrade https://github.com/richardliaw/track/archive/vlad-convenience.zip#egg=track
+pip install --upgrade git+https://github.com/richardliaw/track.git@vlad-convenience#egg=track
 ```
 
 ## Usage
@@ -13,14 +13,13 @@ pip install --upgrade https://github.com/richardliaw/track/archive/vlad-convenie
 ```
 import track 
 
-def training_function():
-    trial = track.Trial("~/results", "remote_dir")
-    trial.start()
-    for i in range(N):
-        # train model ...
-        trial.metric()
-        
-    trial.close()
+def training_function(param1=0.01, param2=10):
+    with track.trial("~/track/myproject", "s3://my-track-bucket/myproject"):
+        model = create_model()
+        for epoch in range(100):
+            model.train()
+            loss = model.get_loss()
+            track.metric(iteration=epoch, loss=loss)
 ```
         
     

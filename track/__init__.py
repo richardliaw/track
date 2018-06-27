@@ -21,12 +21,15 @@ _trial = None
 # the user ever deals with, and instead keeping everything
 # implicit.
 @contextmanager
-def trial(log_dir="~/ray_results/project_name",
+def trial(log_dir=None,
           upload_dir=None,
           sync_period=None,
           trial_prefix="",
-          param_map=None):
-    """Generates a trial within a with context"""
+          param_map=None,
+          init_logging=True):
+    """
+    Generates a trial within a with context.
+    """
     global _trial  # pylint: disable=global-statement
     if _trial:
         # TODO: would be nice to stack crawl at creation time to report

@@ -1,6 +1,7 @@
 """
-Miscellaneous helpers for extracting parameters, useful for creating
-Trial param_maps without the hassle of extracting the parameters manually.
+Miscellaneous helpers for getting some of the arguments to tracking-related
+functions automatically, usually involving parameter extraction in a
+sensible default way from commonly used libraries.
 """
 
 import sys
@@ -12,6 +13,8 @@ def absl_flags():
 
     By default, extracts only those flags in the current __package__
     and mainfile.
+
+    Useful to put into a trial's param_map.
     """
     # TODO: need same thing for argparse
     from absl import flags
