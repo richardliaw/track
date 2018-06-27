@@ -9,6 +9,9 @@ def absl_flags():
     """
     Extracts absl-py flags that the user has specified and outputs their
     key-value mapping.
+
+    By default, extracts only those flags in the current __package__
+    and mainfile.
     """
     # TODO: need same thing for argparse
     from absl import flags
