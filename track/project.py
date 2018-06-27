@@ -43,6 +43,10 @@ class Project(object):
         """
         metadata_folder = os.path.join(self.log_dir, constants.METADATA_FOLDER)
         dfs = []
+        # TODO: various file-creation corner cases like the result file not
+        # always existing if stuff is not logged and etc should be ironed out
+        # (would probably be easier if we had a centralized Sync class which
+        # relied on some formal remote store semantics).
         for trial_id in trial_ids:
             # TODO constants should just contain the recipes for filename
             # construction instead of this multi-file implicit constraint
