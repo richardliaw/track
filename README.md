@@ -5,7 +5,7 @@
 `pip install track` (Not yet). Until we get pypi set up (there's another `track` package...), use
 
 ```
-pip install --upgrade git+git://github.com/richardliaw/track.git#egg=track
+pip install https://github.com/richardliaw/track/archive/vlad-convenience.zip#egg=track
 ```
 
 ## Usage

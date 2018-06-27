@@ -1,7 +1,8 @@
 from contextlib import contextmanager
 
-from track.trial import Trial
-from track.project import Project
+from .trial import Trial
+from .project import Project
+from .convenience import absl_flags
 
 # TODO: note that this might get icky when the user
 # forks or uses multiple threads. The latter can be
@@ -46,4 +47,4 @@ def artifact(artifact_name, src):
     """Applies Trial.artifact to the trial in the current context."""
     _trial.artifact(artifact_name, src)
 
-__all__ = ["Trial", "Project", "trial"]
+__all__ = ["Trial", "Project", "trial", "absl_flags"]
