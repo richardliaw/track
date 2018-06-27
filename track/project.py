@@ -6,7 +6,7 @@ import os
 import subprocess
 import json
 
-import .constants
+from . import constants
 
 from .sync import S3_PREFIX, GCS_PREFIX, check_remote_util
 

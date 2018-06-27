@@ -12,6 +12,14 @@ from .convenience import absl_flags
 # a thread-local stack. Def doable but annoying.
 _trial = None
 
+# TODO: make this (or Trial) an actual context manager class
+# so we can properly detect if an exception was thrown,
+# in which case the fact that we errored can get logged
+# appropriately (i.e., don't close cleanly).
+# TODO: simplify API: only need one of track() or Trial()
+# I like the idea of not having a trial object at all that
+# the user ever deals with, and instead keeping everything
+# implicit.
 @contextmanager
 def trial(log_dir="~/ray_results/project_name",
           upload_dir=None,
@@ -34,7 +42,7 @@ def trial(log_dir="~/ray_results/project_name",
     try:
         _trial = local_trial
         _trial.start()
-        yield
+        yield local_trial
     finally:
         _trial = None
         local_trial.close()
