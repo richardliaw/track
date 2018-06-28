@@ -11,17 +11,21 @@ import pandas as pd
 from . import constants
 
 from .sync import S3_PREFIX, GCS_PREFIX, check_remote_util
+from .trial import _git_repo
 
 class Project(object):
     """
     The project class manages all trials that have been run with the given
     log_dir and upload_dir. It gives pandas-dataframe access to trial metadata,
     metrics, and then path-based access to stored user artifacts for each trial.
+
+    log_dir is created with the same defaults as in track.Trial
     """
 
-    def __init__(self, log_dir, upload_dir=None):
-        # TODO default log_dir should behave like trial's default log dir
-        # TODO that means also expanduser()
+    def __init__(self, log_dir=None, upload_dir=None):
+        git_repo = _git_repo()
+        if log_dir is None:
+            log_dir = os.path.join("~", "track", git_repo or "unknown")
         self.log_dir = log_dir
         if upload_dir:
             check_remote_util(upload_dir)

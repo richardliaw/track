@@ -39,6 +39,7 @@ class Trial(object):
     (2) ~/track/<git repo>, where <git repo> is the name of a git
         repository the cwd is in. If cwd is not in a git repo, then
         <git repo> is set to 'unknown'.
+    (3) TODO: if unknown maybe use sys.argv[0]?
 
     The upload directory may be None (in which case no upload is performed),
     or an S3 directory or a GCS directory.
