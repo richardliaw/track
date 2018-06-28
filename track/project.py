@@ -6,6 +6,8 @@ import os
 import subprocess
 import json
 
+import pandas as pd
+
 from . import constants
 
 from .sync import S3_PREFIX, GCS_PREFIX, check_remote_util
