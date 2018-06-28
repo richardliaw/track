@@ -21,6 +21,7 @@ class Project(object):
 
     def __init__(self, log_dir, upload_dir=None):
         # TODO default log_dir should behave like trial's default log dir
+        # TODO that means also expanduser()
         self.log_dir = log_dir
         if upload_dir:
             check_remote_util(upload_dir)
@@ -96,7 +97,7 @@ class Project(object):
                 continue
             trial_file = os.path.join(metadata_folder, trial_file)
             rows.append(pd.read_json(trial_file, typ='series'))
-        self._ids = pd.concat(rows, axis=1)
+        return pd.concat(rows, axis=1)
 
 def _remote_to_local_sync(remote, local):
     # TODO: at some point look up whether sync will clobber newer
