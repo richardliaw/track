@@ -19,9 +19,11 @@ class Project(object):
     metrics, and then path-based access to stored user artifacts for each trial.
     """
 
-    def __init__(self, log_dir, upload_dir):
+    def __init__(self, log_dir, upload_dir=None):
+        # TODO default log_dir should behave like trial's default log dir
         self.log_dir = log_dir
-        check_remote_util(upload_dir)
+        if upload_dir:
+            check_remote_util(upload_dir)
         self.upload_dir = upload_dir
         self._sync_metadata()
         self._ids = self._load_metadata()
@@ -74,15 +76,17 @@ class Project(object):
         # backslashes but remote dirs will be expecting /
         # TODO: having s3 logic split between project and sync.py
         # worries me
-        remote = '/'.join([self.upload_dir, trial_id, prefix])
         local = os.path.join(self.log_dir, trial_id, prefix)
-        _remote_to_local_sync(remote, local)
+        if self.upload_dir:
+            remote = '/'.join([self.upload_dir, trial_id, prefix])
+            _remote_to_local_sync(remote, local)
         return local
 
     def _sync_metadata(self):
-        remote = '/'.join([self.upload_dir, constants.METADATA_FOLDER])
         local = os.path.join(self.log_dir, constants.METADATA_FOLDER)
-        _remote_to_local_sync(remote, local)
+        if self.upload_dir:
+            remote = '/'.join([self.upload_dir, constants.METADATA_FOLDER])
+            _remote_to_local_sync(remote, local)
 
     def _load_metadata(self):
         metadata_folder = os.path.join(self.log_dir, constants.METADATA_FOLDER)
