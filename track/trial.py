@@ -141,8 +141,10 @@ class Trial(object):
 def _git_repo():
     # returns None if not in a git repo, else the repo root
     try:
-        return os.path.dirname(os.path.abspath(subprocess.check_output(
-            ['git', 'rev-parse', '--git-dir'])))
+        reldir = subprocess.check_output(
+            ['git', 'rev-parse', '--git-dir'])
+        reldir = reldir.decode('utf-8')
+        return os.path.dirname(os.path.abspath(reldir))
     except subprocess.CalledProcessError:
         return None
 
