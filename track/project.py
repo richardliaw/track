@@ -9,9 +9,8 @@ import json
 import pandas as pd
 
 from . import constants
-
+from .autodetect import dfl_local_dir
 from .sync import S3_PREFIX, GCS_PREFIX, check_remote_util
-from .trial import _git_repo
 
 class Project(object):
     """
@@ -23,9 +22,8 @@ class Project(object):
     """
 
     def __init__(self, log_dir=None, upload_dir=None):
-        git_repo = _git_repo()
         if log_dir is None:
-            log_dir = os.path.join("~", "track", git_repo or "unknown")
+            log_dir = dfl_local_dir()
         self.log_dir = log_dir
         if upload_dir:
             check_remote_util(upload_dir)

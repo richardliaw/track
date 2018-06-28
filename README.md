@@ -10,6 +10,8 @@ pip install --upgrade git+https://github.com/richardliaw/track.git@vlad-convenie
 
 ## Usage
 
+Report various metrics of interest.
+
 ```
 import track 
 
@@ -22,4 +24,3 @@ def training_function(param1=0.01, param2=10):
             track.metric(iteration=epoch, loss=loss)
 ```
         
-    

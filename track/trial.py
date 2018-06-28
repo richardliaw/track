@@ -6,6 +6,7 @@ import subprocess
 import uuid
 import shutil
 from datetime import datetime
+from .autodetect import git_repo, dfl_local_dir
 from .constants import METADATA_FOLDER, RESULT_SUFFIX
 from . import log
 
@@ -54,9 +55,13 @@ class Trial(object):
                  trial_prefix="",
                  param_map=None,
                  init_logging=True):
-        git_repo = _git_repo()
         if log_dir is None:
-            log_dir = os.path.join("~", "track", git_repo or "unknown")
+            log_dir = dfl_local_dir()
+             # TODO should probably check if this exists and whether
+             # we'll be clobbering anything in either the artifact dir
+             # or the metadata dir, idk what the probability is that a
+             # uuid truncation will get duplicated. Then also maybe
+             # the same thing for the remote dir.
 
         base_dir = os.path.expanduser(log_dir)
         self.base_dir = base_dir
@@ -73,8 +78,10 @@ class Trial(object):
 
         # misc metadata to save as well
         self.param_map["trial_id"] = self.trial_id
-        self.param_map["git_repo"] = git_repo or "unknown"
-        self.param_map["git_hash"] = _git_hash() if git_repo else "unknown"
+        git_repo_or_none = git_repo()
+        self.param_map["git_repo"] = git_repo_or_none or "unknown"
+        self.param_map["git_hash"] = (
+            _git_hash() if git_repo_or_none else "unknown")
         self.param_map["start_time"] = datetime.now().isoformat()
         self.param_map["invocation"] = _invocation()
         self.param_map["trial_completed"] = False
@@ -138,16 +145,6 @@ class Trial(object):
 
     def get_result_filename(self):
         return os.path.join(self.data_dir, self.trial_id + "_" + RESULT_SUFFIX)
-
-def _git_repo():
-    # returns None if not in a git repo, else the repo root
-    try:
-        reldir = subprocess.check_output(
-            ['git', 'rev-parse', '--git-dir'])
-        reldir = reldir.decode('utf-8')
-        return os.path.basename(os.path.dirname(os.path.abspath(reldir)))
-    except subprocess.CalledProcessError:
-        return None
 
 def _git_hash():
     # returns the current git hash. must be in git repo

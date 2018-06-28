@@ -1,7 +1,8 @@
 from setuptools import setup
 
 install_requires = [
-    "pandas>=0.20.1"
+    "pandas>=0.20.1",
+    'absl-py>=0.1.13',
 ]
 
 setup(

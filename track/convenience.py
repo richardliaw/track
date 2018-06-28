@@ -5,6 +5,7 @@ sensible default way from commonly used libraries.
 """
 
 import sys
+from absl import flags
 
 def absl_flags():
     """
@@ -17,7 +18,6 @@ def absl_flags():
     Useful to put into a trial's param_map.
     """
     # TODO: need same thing for argparse
-    from absl import flags
     flags_dict = flags.FLAGS.flags_by_module_dict()
     # only include parameters from modules the user probably cares about
     def _relevant_module(module_name):
