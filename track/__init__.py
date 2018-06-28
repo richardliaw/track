@@ -2,6 +2,7 @@ from contextlib import contextmanager
 
 from .trial import Trial
 from .project import Project
+from .log import debug
 from .convenience import absl_flags
 
 # TODO: note that this might get icky when the user
@@ -58,4 +59,4 @@ def artifact(artifact_name, src):
     """Applies Trial.artifact to the trial in the current context."""
     _trial.artifact(artifact_name, src)
 
-__all__ = ["Trial", "Project", "trial", "absl_flags"]
+__all__ = ["Trial", "Project", "trial", "absl_flags", "debug"]
