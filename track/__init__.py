@@ -53,10 +53,10 @@ def trial(log_dir=None,
 
 def metric(*, iteration=None, **kwargs):
     """Applies Trial.metric to the trial in the current context."""
-    _trial.metric(iteration=iteration, **kwargs)
+    return _trial.metric(iteration=iteration, **kwargs)
 
-def artifact(artifact_name, src):
-    """Applies Trial.artifact to the trial in the current context."""
-    _trial.artifact(artifact_name, src)
+def artifact_directory():
+    """Applies Trial.artifact_directory to the trial in the current context."""
+    return _trial.artifact_directory()
 
 __all__ = ["Trial", "Project", "trial", "absl_flags", "debug"]

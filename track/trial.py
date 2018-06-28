@@ -66,6 +66,7 @@ class Trial(object):
 
         self._sync_period = sync_period
         self.artifact_dir = os.path.join(base_dir, self.trial_id)
+        os.makedirs(self.artifact_dir, exist_ok=True)
         self.upload_dir = upload_dir
         self.param_map = param_map or {}
 
@@ -79,6 +80,8 @@ class Trial(object):
 
         if init_logging:
             log.init(self.logging_handler())
+            log.debug("(re)initilized logging")
+
 
 
     def logging_handler(self):
@@ -89,7 +92,6 @@ class Trial(object):
         If you use init_logging = True there is no need to call this
         method.
         """
-        os.makedirs(self.artifact_dir, exist_ok=True)
         return log.TrackLogHandler(
             os.path.join(self.artifact_dir, 'log.txt'))
 
@@ -120,12 +122,9 @@ class Trial(object):
         for hook in self._hooks:
             hook.on_result(new_args)
 
-    def artifact(self, artifact_name, src):
-        srcpath = os.path.expanduser(src)
-        # Copy filepath to the base_dir
-        destpath = os.path.join(self.artifact_dir, artifact_name)
-        os.path.makedirs(os.path.dirname(artifact_name), exist_ok=True)
-        shutil.copy(srcpath, destpath)
+    def artifact_directory(self):
+        """returns the local file path to the trial's artifact directory"""
+        return self.artifact_dir
 
     def close(self):
         for hook in self._hooks:
