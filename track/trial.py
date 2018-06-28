@@ -144,7 +144,6 @@ def _git_repo():
         reldir = subprocess.check_output(
             ['git', 'rev-parse', '--git-dir'])
         reldir = reldir.decode('utf-8')
-        print(os.path.dirname(os.path.abspath(reldir)))
         return os.path.basename(os.path.dirname(os.path.abspath(reldir)))
     except subprocess.CalledProcessError:
         return None
