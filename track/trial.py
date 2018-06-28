@@ -89,6 +89,7 @@ class Trial(object):
         If you use init_logging = True there is no need to call this
         method.
         """
+        os.makedirs(self.artifact_dir, exist_ok=True)
         return log.TrackLogHandler(
             os.path.join(self.artifact_dir, 'log.txt'))
 
