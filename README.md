@@ -16,13 +16,16 @@ Report various metrics of interest, with automatically configured and persisted 
 import track 
 
 def training_function(param1=0.01, param2=10):
-    with track.trial("~/track/myproject", "s3://my-track-bucket/myproject"):
+    local = "~/track/myproject"
+    remote = "s3://my-track-bucket/myproject"
+    with track.trial(local, remote, param_map={"param1": param1, "param2": param2}):
         model = create_model()
         for epoch in range(100):
             model.train()
             loss = model.get_loss()
             track.metric(iteration=epoch, loss=loss)
             track.debug("epoch {} just finished with loss {}", epoch, loss)
+            model.save(os.path.join(track.trial_dir(), "model{}.ckpt".format(epoch)))
 ```
         
 Inspect existing experiments
@@ -45,6 +48,13 @@ proj = track.Project("~/track/myproject", "s3://my-track-bucket/myproject")
 most_recent = proj.ids["start_time"].idxmax()
 most_recent_id = proj.ids["trial_id"].iloc[[most_recent]]
 res = proj.results(most_recent_id)
-plt.plot(res["loss"].dropna())
+plt.plot(res[["iteration", "loss"]].dropna())
 plt.savefig("loss.png")
+```
+
+Recover saved artifacts
+
+```
+model.load(proj.fetch_artifact(most_recent_id[0], 'model10.ckpt'))
+model.serve_predictions()
 ```
