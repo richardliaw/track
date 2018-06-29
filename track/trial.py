@@ -37,10 +37,7 @@ class Trial(object):
 
     In order of precedence, log_dir is determined by:
     (1) the path passed into the argument of the Trial constructor
-    (2) ~/track/<git repo>, where <git repo> is the name of a git
-        repository the cwd is in. If cwd is not in a git repo, then
-        <git repo> is set to 'unknown'.
-    (3) TODO: if unknown maybe use sys.argv[0]?
+    (2) autodetect.dfl_local_dir()
 
     The upload directory may be None (in which case no upload is performed),
     or an S3 directory or a GCS directory.

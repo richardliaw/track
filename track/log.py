@@ -70,8 +70,9 @@ def debug(s, *args):
     except Exception:  # pylint: disable=broad-except
         pathname = '<UNKNOWN-FILE>.py'
         lineno = 0
-    _FORMATTER.pathname = pathname
-    _FORMATTER.lineno = lineno
+    if _FORMATTER: # log could have not been initialized.
+        _FORMATTER.pathname = pathname
+        _FORMATTER.lineno = lineno
     logger = logging.getLogger(__package__)
     logger.debug(s.format(*args))
 
