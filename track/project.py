@@ -61,7 +61,7 @@ class Project(object):
                 metadata_folder, trial_id + "_" + constants.RESULT_SUFFIX)
             assert os.path.isfile(result_file), result_file
             dfs.append(pd.read_json(result_file, typ='frame', lines=True))
-        df = pd.concat(dfs, axis=0, ignore_index=True)
+        df = pd.concat(dfs, axis=0, ignore_index=True, sort=False)
         return df
 
 
@@ -99,7 +99,7 @@ class Project(object):
                 continue
             trial_file = os.path.join(metadata_folder, trial_file)
             rows.append(pd.read_json(trial_file, typ='frame', lines=True))
-        return pd.concat(rows, axis=0, ignore_index=True)
+        return pd.concat(rows, axis=0, ignore_index=True, sort=False)
 
 def _remote_to_local_sync(remote, local):
     # TODO: at some point look up whether sync will clobber newer
