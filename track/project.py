@@ -6,8 +6,10 @@ import os
 import subprocess
 import json
 
-import .constants
+import pandas as pd
 
+from . import constants
+from .autodetect import dfl_local_dir
 from .sync import S3_PREFIX, GCS_PREFIX, check_remote_util
 
 class Project(object):
@@ -15,11 +17,16 @@ class Project(object):
     The project class manages all trials that have been run with the given
     log_dir and upload_dir. It gives pandas-dataframe access to trial metadata,
     metrics, and then path-based access to stored user artifacts for each trial.
+
+    log_dir is created with the same defaults as in track.Trial
     """
 
-    def __init__(self, log_dir, upload_dir):
+    def __init__(self, log_dir=None, upload_dir=None):
+        if log_dir is None:
+            log_dir = dfl_local_dir()
         self.log_dir = log_dir
-        check_remote_util(upload_dir)
+        if upload_dir:
+            check_remote_util(upload_dir)
         self.upload_dir = upload_dir
         self._sync_metadata()
         self._ids = self._load_metadata()
@@ -43,14 +50,18 @@ class Project(object):
         """
         metadata_folder = os.path.join(self.log_dir, constants.METADATA_FOLDER)
         dfs = []
+        # TODO: various file-creation corner cases like the result file not
+        # always existing if stuff is not logged and etc should be ironed out
+        # (would probably be easier if we had a centralized Sync class which
+        # relied on some formal remote store semantics).
         for trial_id in trial_ids:
             # TODO constants should just contain the recipes for filename
             # construction instead of this multi-file implicit constraint
             result_file = os.path.join(
                 metadata_folder, trial_id + "_" + constants.RESULT_SUFFIX)
             assert os.path.isfile(result_file), result_file
-            dfs.append(pd.read_json(result_file, typ='frame'))
-        df = pd.concat(rows, axis=0, ignore_index=True)
+            dfs.append(pd.read_json(result_file, typ='frame', lines=True))
+        df = pd.concat(dfs, axis=0, ignore_index=True)
         return df
 
 
@@ -68,15 +79,17 @@ class Project(object):
         # backslashes but remote dirs will be expecting /
         # TODO: having s3 logic split between project and sync.py
         # worries me
-        remote = '/'.join([self.upload_dir, trial_id, prefix])
         local = os.path.join(self.log_dir, trial_id, prefix)
-        _remote_to_local_sync(remote, local)
+        if self.upload_dir:
+            remote = '/'.join([self.upload_dir, trial_id, prefix])
+            _remote_to_local_sync(remote, local)
         return local
 
     def _sync_metadata(self):
-        remote = '/'.join([self.upload_dir, constants.METADATA_FOLDER])
         local = os.path.join(self.log_dir, constants.METADATA_FOLDER)
-        _remote_to_local_sync(remote, local)
+        if self.upload_dir:
+            remote = '/'.join([self.upload_dir, constants.METADATA_FOLDER])
+            _remote_to_local_sync(remote, local)
 
     def _load_metadata(self):
         metadata_folder = os.path.join(self.log_dir, constants.METADATA_FOLDER)
@@ -85,8 +98,8 @@ class Project(object):
             if not trial_file.endswith(constants.CONFIG_SUFFIX):
                 continue
             trial_file = os.path.join(metadata_folder, trial_file)
-            rows.append(pd.read_json(trial_file, typ='series'))
-        self._ids = pd.concat(rows, axis=1)
+            rows.append(pd.read_json(trial_file, typ='frame', lines=True))
+        return pd.concat(rows, axis=0, ignore_index=True)
 
 def _remote_to_local_sync(remote, local):
     # TODO: at some point look up whether sync will clobber newer

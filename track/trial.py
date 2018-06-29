@@ -1,10 +1,14 @@
 import os
+import sys, shlex
 from track.logger import UnifiedLogger
 from track.sync import SyncHook
+import subprocess
 import uuid
 import shutil
 from datetime import datetime
-from track.constants import METADATA_FOLDER, RESULT_SUFFIX
+from .autodetect import git_repo, dfl_local_dir, git_hash, invocation
+from .constants import METADATA_FOLDER, RESULT_SUFFIX
+from . import log
 
 
 def time_str():
@@ -26,14 +30,36 @@ def flatten_dict(dt):
             del dt[k]
     return dt
 
-
 class Trial(object):
+    """
+    Trial attempts to infer the local log_dir and remote upload_dir
+    automatically.
+
+    In order of precedence, log_dir is determined by:
+    (1) the path passed into the argument of the Trial constructor
+    (2) autodetect.dfl_local_dir()
+
+    The upload directory may be None (in which case no upload is performed),
+    or an S3 directory or a GCS directory.
+
+    init_logging will automatically set up a logger at the debug level,
+    along with handlers to print logs to stdout and to a persistent store.
+    """
     def __init__(self,
-                 log_dir="~/ray_results/project_name",
+                 log_dir=None,
                  upload_dir=None,
                  sync_period=None,
                  trial_prefix="",
-                 param_map=None):
+                 param_map=None,
+                 init_logging=True):
+        if log_dir is None:
+            log_dir = dfl_local_dir()
+             # TODO should probably check if this exists and whether
+             # we'll be clobbering anything in either the artifact dir
+             # or the metadata dir, idk what the probability is that a
+             # uuid truncation will get duplicated. Then also maybe
+             # the same thing for the remote dir.
+
         base_dir = os.path.expanduser(log_dir)
         self.base_dir = base_dir
         self.data_dir = os.path.join(base_dir, METADATA_FOLDER)
@@ -43,9 +69,36 @@ class Trial(object):
 
         self._sync_period = sync_period
         self.artifact_dir = os.path.join(base_dir, self.trial_id)
+        os.makedirs(self.artifact_dir, exist_ok=True)
         self.upload_dir = upload_dir
         self.param_map = param_map or {}
+
+        # misc metadata to save as well
         self.param_map["trial_id"] = self.trial_id
+        git_repo_or_none = git_repo()
+        self.param_map["git_repo"] = git_repo_or_none or "unknown"
+        self.param_map["git_hash"] = (
+            git_hash() if git_repo_or_none else "unknown")
+        self.param_map["start_time"] = datetime.now().isoformat()
+        self.param_map["invocation"] = invocation()
+        self.param_map["trial_completed"] = False
+
+        if init_logging:
+            log.init(self.logging_handler())
+            log.debug("(re)initilized logging")
+
+
+
+    def logging_handler(self):
+        """
+        For advanced logging setups, returns a file-based log handler
+        pointing to a log.txt artifact.
+
+        If you use init_logging = True there is no need to call this
+        method.
+        """
+        return log.TrackLogHandler(
+            os.path.join(self.artifact_dir, 'log.txt'))
 
     def start(self):
         for path in [self.base_dir, self.data_dir, self.artifact_dir]:
@@ -74,16 +127,18 @@ class Trial(object):
         for hook in self._hooks:
             hook.on_result(new_args)
 
-    def artifact(self, artifact_name, src):
-        srcpath = os.path.expanduser(src)
-        # Copy filepath to the base_dir
-        destpath = os.path.join(self.artifact_dir, artifact_name)
-        os.path.makedirs(os.path.dirname(artifact_name), exist_ok=True)
-        shutil.copy(srcpath, destpath)
+    def trial_dir(self):
+        """returns the local file path to the trial's artifact directory"""
+        return self.artifact_dir
 
     def close(self):
         for hook in self._hooks:
             hook.close()
+        # unsure if editting the param_map file like this is very kosher
+        self.param_map["trial_completed"] = True
+        # using a constructor for its side effect here (updating the param map)
+        UnifiedLogger(
+            self.param_map, self.data_dir, self.trial_id + "_").close()
 
     def get_result_filename(self):
         return os.path.join(self.data_dir, self.trial_id + "_" + RESULT_SUFFIX)

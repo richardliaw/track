@@ -16,6 +16,9 @@ list file (i.e., not valid json, but valid json on each line),
 and the artifacts folder contains the artifacts as supplied by
 the user.
 """
+import os
+
 METADATA_FOLDER = "trials"
 CONFIG_SUFFIX = "param_map.json"
 RESULT_SUFFIX = "result.json"
+DFL_DIR_PARENT = os.path.join("~", "track")
