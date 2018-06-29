@@ -6,7 +6,7 @@ import subprocess
 import uuid
 import shutil
 from datetime import datetime
-from .autodetect import git_repo, dfl_local_dir
+from .autodetect import git_repo, dfl_local_dir, git_hash, invocation
 from .constants import METADATA_FOLDER, RESULT_SUFFIX
 from . import log
 
@@ -78,9 +78,9 @@ class Trial(object):
         git_repo_or_none = git_repo()
         self.param_map["git_repo"] = git_repo_or_none or "unknown"
         self.param_map["git_hash"] = (
-            _git_hash() if git_repo_or_none else "unknown")
+            git_hash() if git_repo_or_none else "unknown")
         self.param_map["start_time"] = datetime.now().isoformat()
-        self.param_map["invocation"] = _invocation()
+        self.param_map["invocation"] = invocation()
         self.param_map["trial_completed"] = False
 
         if init_logging:
@@ -127,7 +127,7 @@ class Trial(object):
         for hook in self._hooks:
             hook.on_result(new_args)
 
-    def artifact_directory(self):
+    def trial_dir(self):
         """returns the local file path to the trial's artifact directory"""
         return self.artifact_dir
 
@@ -142,18 +142,3 @@ class Trial(object):
 
     def get_result_filename(self):
         return os.path.join(self.data_dir, self.trial_id + "_" + RESULT_SUFFIX)
-
-def _git_hash():
-    # returns the current git hash. must be in git repo
-    git_hash = subprocess.check_output(
-        ['git', 'rev-parse', 'HEAD'])
-    # git_hash is a byte string; we want a string.
-    git_hash = git_hash.decode('utf-8')
-    # git_hash also comes with an extra \n at the end, which we remove.
-    git_hash = git_hash.strip()
-    return git_hash
-
-def _invocation():
-    cmdargs = [sys.executable] + sys.argv[:]
-    invocation = ' '.join(shlex.quote(s) for s in cmdargs)
-    return invocation

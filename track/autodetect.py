@@ -4,10 +4,13 @@ Hacky, library and usage specific tricks to infer decent defaults.
 import os
 import subprocess
 import sys
+import shlex
+
+from .constants import DFL_DIR_PARENT
 
 def dfl_local_dir():
     """
-    Infers a default local directory, which is ~/track/<project name>,
+    Infers a default local directory, which is DFL_DIR_PARENT/<project name>,
     where the project name is guessed according to the following rules.
 
     If we detect we're in a repository, the project name is the repository name
@@ -23,7 +26,7 @@ def dfl_local_dir():
         project_name = sys.argv[0]
     if not project_name:
         project_name = "unknown"
-    dirpath = os.path.join("~", "track", project_name)
+    dirpath = os.path.join(DFL_DIR_PARENT, project_name)
     return os.path.expanduser(dirpath)
 
 def git_repo():
@@ -37,3 +40,20 @@ def git_repo():
         return os.path.basename(os.path.dirname(os.path.abspath(reldir)))
     except subprocess.CalledProcessError:
         return None
+
+
+def git_hash():
+    """returns the current git hash. must be in git repo"""
+    git_hash = subprocess.check_output(
+        ['git', 'rev-parse', 'HEAD'])
+    # git_hash is a byte string; we want a string.
+    git_hash = git_hash.decode('utf-8')
+    # git_hash also comes with an extra \n at the end, which we remove.
+    git_hash = git_hash.strip()
+    return git_hash
+
+def invocation():
+    """reconstructs the invocation for this python program"""
+    cmdargs = [sys.executable] + sys.argv[:]
+    invocation = ' '.join(shlex.quote(s) for s in cmdargs)
+    return invocation
