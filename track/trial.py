@@ -81,6 +81,7 @@ class Trial(object):
             git_hash() if git_repo_or_none else "unknown")
         self.param_map["start_time"] = datetime.now().isoformat()
         self.param_map["invocation"] = invocation()
+        self.param_map["max_iteration"] = -1
         self.param_map["trial_completed"] = False
 
         if init_logging:
@@ -124,6 +125,9 @@ class Trial(object):
         new_args = flatten_dict(kwargs)
         new_args.update({"iteration": iteration})
         new_args.update({"trial_id": self.trial_id})
+        if iteration is not None:
+            self.param_map["max_iteration"] = max(
+                self.param_map["max_iteration"], iteration)
         for hook in self._hooks:
             hook.on_result(new_args)
 
