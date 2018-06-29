@@ -42,7 +42,8 @@ def trial(log_dir=None,
         upload_dir=upload_dir,
         sync_period=sync_period,
         trial_prefix=trial_prefix,
-        param_map=param_map)
+        param_map=param_map,
+        init_logging=True)
     try:
         _trial = local_trial
         _trial.start()
