@@ -107,12 +107,12 @@ class Trial(object):
             if not os.path.exists(path):
                 os.makedirs(path)
 
+        self._logger = UnifiedLogger(
+            self.param_map,
+            self.data_dir,
+            filename_prefix=self.trial_id + "_")
         self._hooks = []
-        self._hooks.append(
-            UnifiedLogger(
-                self.param_map,
-                self.data_dir,
-                filename_prefix=self.trial_id + "_"))
+        self._hooks.append(self._logger)
 
         if self.upload_dir:
             # note weird interaction here if user edits an artifact,
@@ -137,16 +137,12 @@ class Trial(object):
         return self.artifact_dir
 
     def close(self):
+        self.param_map["trial_completed"] = True
+        self.param_map["end_time"] = datetime.now().isoformat()
+        self._logger.update_config(self.param_map)
+
         for hook in self._hooks:
             hook.close()
-        # unsure if editting the param_map file like this is very kosher
-        # it's eventually correct :)
-        self.param_map["trial_completed"] = True
-        # max_iteration has been getting updated during the computation as well
-        self.param_map["end_time"] = datetime.now().isoformat()
-        # using a constructor for its side effect here (updating the param map)
-        UnifiedLogger(
-            self.param_map, self.data_dir, self.trial_id + "_").close()
 
     def get_result_filename(self):
         return os.path.join(self.data_dir, self.trial_id + "_" + RESULT_SUFFIX)
