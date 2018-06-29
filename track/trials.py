@@ -12,10 +12,10 @@ trials in the default local directory (see track.autodetect.dfl_local_dir) are
 summarized by
 
 $ python -m track.trials
-trial_id    start_time                 git_hash
-8424fb387a 2018-06-28 11:17:28.752259  f573f57cef01316ab6b6af0d73efac9e7ba1f415
-6187e7bc7a 2018-06-27 18:27:11.635714  f573f57cef01316ab6b6af0d73efac9e7ba1f415
-14b0ed447a 2018-06-27 18:25:02.718893  f573f57cef01316ab6b6af0d73efac9e7ba1f415
+trial_id    start_time                 git_pretty
+8424fb387a 2018-06-28 11:17:28.752259  c568050 Switch to track logging (#13)
+6187e7bc7a 2018-06-27 18:27:11.635714  c568050 Switch to track logging (#13)
+14b0ed447a 2018-06-27 18:25:02.718893  c568050 Switch to track logging (#13)
 
 The default prints the above columns sorted by start time. We can ask for
 parameters on the command line.
