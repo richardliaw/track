@@ -79,7 +79,7 @@ def _main(argv):
             df = df[compare(c, df[col], lit)]
     df = df.sort_values("start_time", ascending=False)
     if not cols:
-        cols = ["trial_id", "start_time", "git_hash"]
+        cols = ["trial_id", "start_time", "git_pretty"]
     print(df[cols].to_string(index=False, justify='left'))
 
 

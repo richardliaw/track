@@ -6,7 +6,8 @@ import subprocess
 import uuid
 import shutil
 from datetime import datetime
-from .autodetect import git_repo, dfl_local_dir, git_hash, invocation
+from .autodetect import (
+    git_repo, dfl_local_dir, git_hash, invocation, git_pretty)
 from .constants import METADATA_FOLDER, RESULT_SUFFIX
 from . import log
 
@@ -77,8 +78,8 @@ class Trial(object):
         self.param_map["trial_id"] = self.trial_id
         git_repo_or_none = git_repo()
         self.param_map["git_repo"] = git_repo_or_none or "unknown"
-        self.param_map["git_hash"] = (
-            git_hash() if git_repo_or_none else "unknown")
+        self.param_map["git_hash"] = git_hash()
+        self.param_map["git_pretty"] = git_pretty()
         self.param_map["start_time"] = datetime.now().isoformat()
         self.param_map["invocation"] = invocation()
         self.param_map["max_iteration"] = -1
@@ -139,7 +140,10 @@ class Trial(object):
         for hook in self._hooks:
             hook.close()
         # unsure if editting the param_map file like this is very kosher
+        # it's eventually correct :)
         self.param_map["trial_completed"] = True
+        # max_iteration has been getting updated during the computation as well
+        self.param_map["end_time"] = datetime.now().isoformat()
         # using a constructor for its side effect here (updating the param map)
         UnifiedLogger(
             self.param_map, self.data_dir, self.trial_id + "_").close()
