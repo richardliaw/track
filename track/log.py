@@ -51,7 +51,7 @@ def init(track_log_handler):
         logger.addHandler(handler)
 
     track_log_handler.setFormatter(_FORMATTER)
-    logger.addHandler(handler)
+    logger.addHandler(track_log_handler)
 
     logger.propagate = False
     logger.setLevel(logging.DEBUG)

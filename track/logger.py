@@ -55,11 +55,11 @@ class UnifiedLogger(Logger):
 
     This class also periodically syncs output to the given upload uri."""
     def _init(self):
-        self.update_config(self.config)
         self._loggers = {}
         for cls in [_JsonLogger]:
             self._loggers[cls.__name__] = cls(self.config, self.logdir,
                                               self.filename_prefix, self.uri)
+        self.update_config(self.config)
 
     def on_result(self, result):
         for logger in self._loggers.values():
@@ -71,8 +71,8 @@ class UnifiedLogger(Logger):
 
     def update_config(self, config):
         self.config = config
-        for loggers in self._loggers.values():
-            loggers.config = config
+        for logger in self._loggers.values():
+            logger.config = config
         config_out = os.path.join(
             self.logdir, self.filename_prefix + CONFIG_SUFFIX)
         with open(config_out, "w") as f:
