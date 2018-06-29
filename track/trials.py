@@ -56,6 +56,10 @@ def compare(c, l, r):
     else:
         raise ValueError('unknown operator ' + c)
 
+def _drop_first_two_words(sentence):
+    remain = sentence.partition(' ')[2]
+    return remain.partition(' ')[2]
+
 def _parse_pandas(lit):
     df = pd.read_json('{{"0": "{}"}}'.format(lit), typ="series")
     return df[0]
@@ -78,6 +82,8 @@ def _main(argv):
             lit = _parse_pandas(lit)
             df = df[compare(c, df[col], lit)]
     df = df.sort_values("start_time", ascending=False)
+    # just the flags
+    df["invocation"] = df["invocation"].map(_drop_first_two_words)
     if not cols:
         cols = ["trial_id", "start_time", "git_pretty"]
     print(df[cols].to_string(index=False, justify='left'))

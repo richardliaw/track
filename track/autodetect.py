@@ -62,7 +62,7 @@ def git_pretty():
         ["git", "log", "--pretty=format:%h %s", "-n", "1"])
     pretty = pretty.decode("utf-8")
     pretty = pretty.strip()
-    return pretty[:50]
+    return pretty
 
 def invocation():
     """reconstructs the invocation for this python program"""
