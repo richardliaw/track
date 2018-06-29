@@ -66,6 +66,8 @@ def _parse_pandas(lit):
 
 def _main(argv):
     proj = Project(flags.FLAGS.local_dir, flags.FLAGS.remote_dir)
+    dt_cols = ["start_time", "end_time"]
+    formatter = lambda x: x.strftime("%Y-%m-%d %H:%M.%S")
     argv = argv[1:]
     cols = []
     df = proj.ids
@@ -86,7 +88,9 @@ def _main(argv):
     df["invocation"] = df["invocation"].map(_drop_first_two_words)
     if not cols:
         cols = ["trial_id", "start_time", "git_pretty"]
-    print(df[cols].to_string(index=False, justify='left'))
+    print(df[cols].to_string(
+        index=False, justify='left',
+        formatters={x: formatter for x in dt_cols}))
 
 
 if __name__ == '__main__':
