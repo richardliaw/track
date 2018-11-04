@@ -5,6 +5,9 @@ from .project import Project
 from .log import debug
 from .convenience import absl_flags
 
+
+name = 'track-ml'
+
 # TODO: note that this might get icky when the user
 # forks or uses multiple threads. The latter can be
 # solved with locking. The former is more annoying, maybe
