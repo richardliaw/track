@@ -2,11 +2,13 @@
 
 ## Installation
 
-`pip install track` (Not yet). Until we get pypi set up (there's another `track` package...), use
+Just use:
 
 ```
-pip install --upgrade git+https://github.com/richardliaw/track.git@master#egg=track
+pip install track-ml
 ```
+
+Right now this requires python 3.
 
 ## Usage
 
