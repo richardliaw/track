@@ -14,7 +14,7 @@ Right now this requires python 3.
 
 Report various metrics of interest, with automatically configured and persisted logging.
 
-```
+```python
 import track 
 
 def training_function(param1=0.01, param2=10):
@@ -32,7 +32,7 @@ def training_function(param1=0.01, param2=10):
         
 Inspect existing experiments
 
-```
+```bash
 $ python -m track.trials --local_dir ~/track/myproject trial_id "start_time>2018-06-28" param2
 trial_id    start_time                param2
 8424fb387a 2018-06-28 11:17:28.752259 10
@@ -40,7 +40,7 @@ trial_id    start_time                param2
 
 Plot results
 
-```
+```python
 import track
 import matplotlib
 matplotlib.use('Agg')
@@ -56,7 +56,7 @@ plt.savefig("loss.png")
 
 Recover saved artifacts
 
-```
+```python
 model.load(proj.fetch_artifact(most_recent_id[0], 'model10.ckpt'))
 model.serve_predictions()
 ```
