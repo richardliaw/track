@@ -13,7 +13,7 @@ with open("README.md", "r") as fh:
 setup(
     name="track-ml",
     author="RISE",
-    version="0.1",
+    version="0.1.1",
     description="Experiment tracking module",
     install_requires=install_requires,
     long_description=long_description,
