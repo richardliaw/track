@@ -64,7 +64,7 @@ class Trial(object):
         base_dir = os.path.expanduser(log_dir)
         self.base_dir = base_dir
         self.data_dir = os.path.join(base_dir, METADATA_FOLDER)
-        self.trial_id = uuid.uuid1().hex[:10]
+        self.trial_id = str(uuid.uuid1().hex[:10])
         if trial_prefix:
             self.trial_id = "_".join([trial_prefix, self.trial_id])
 
