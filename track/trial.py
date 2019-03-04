@@ -137,13 +137,12 @@ class Trial(object):
         result = base + "_" + str(iteration) + file_extension
         return result
 
-    def save(self, obj, result_name, iteration=None, save_fn=pickle.dump,
-             **kwargs):
+    def save(self, result, result_name, save_fn, iteration=None, **kwargs):
         """
         Persists the object of the given type. If iteration is not specified
         and a file already exists, it will override the previously saved object.
 
-        obj: the python object to persist.
+        result: the python object to persist.
 
         result_name: a string corresponding to the name/type of object to be saved.
                   for example, obj_name="model" for persisting the current
@@ -155,7 +154,7 @@ class Trial(object):
         fname = self._get_fname(result_name, iteration=iteration)
         return save_fn(result, fname, **kwargs)
 
-    def load(result_name, iteration=None, load_fn=pickle.load, **kwargs):
+    def load(self, result_name, load_fn, iteration=None, **kwargs):
         """
         Loads the persisted object of the given type for the corresponding
         iteration. If iteration is not specified, it will load the most recent one.
