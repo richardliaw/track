@@ -1,10 +1,8 @@
 import os
-import sys, shlex
+import pickle
 from track.logger import UnifiedLogger
 from track.sync import SyncHook
-import subprocess
 import uuid
-import shutil
 from datetime import datetime
 from .autodetect import (
     git_repo, dfl_local_dir, git_hash, invocation, git_pretty)
@@ -30,6 +28,7 @@ def flatten_dict(dt):
         for k in remove:
             del dt[k]
     return dt
+
 
 class Trial(object):
     """
@@ -89,8 +88,6 @@ class Trial(object):
             log.init(self.logging_handler())
             log.debug("(re)initilized logging")
 
-
-
     def logging_handler(self):
         """
         For advanced logging setups, returns a file-based log handler
@@ -131,6 +128,37 @@ class Trial(object):
                 self.param_map["max_iteration"], iteration)
         for hook in self._hooks:
             hook.on_result(new_args)
+
+    def save(self, obj, obj_name, iteration=None, save_fn=pickle.dump,
+             **kwargs):
+        """
+        Persists the object of the given type. If iteration is not specified
+        and a file already exists, it will override the previously saved object.
+
+        obj: the python object to persist.
+
+        obj_name: a string corresponding to the name/type of object to be saved.
+                  for example, obj_name="model" for persisting the current
+                  iterate's model to disk.
+
+        save_fn: expected signature is save_fn(obj, file, **kwargs) or
+                 save_fn(obj, fname, **kwargs).
+        """
+
+        pass
+
+    def load(obj_name, iteration=None, load_fn=pickle.load, **kwargs):
+        """
+        Loads the persisted object of the given type for the corresponding
+        iteration. If iteration is not specified, it will load the most recent one.
+
+        obj_name: the obj_name set up in track.save for the type of object to
+                  be saved.
+
+        load_fn: expected signature is load_fn(fname, **kwargs)
+                 or load_fn(file, **kwargs)
+        """
+        pass
 
     def trial_dir(self):
         """returns the local file path to the trial's artifact directory"""

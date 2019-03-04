@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+import pickle
 
 from .trial import Trial
 from .project import Project
@@ -59,13 +60,48 @@ def shutdown():
     _trial = None
 
 
+def save(obj, obj_name, iteration=None, save_fn=pickle.dump, **kwargs):
+    """
+    Persists the object of the given type. If iteration is not specified
+    and a file already exists, it will override the previously saved object.
+
+    obj: the python object to persist.
+
+    obj_name: a string corresponding to the name/type of object to be saved.
+              for example, obj_name="model" for persisting the current
+              iterate's model to disk.
+
+    save_fn: expected signature is save_fn(obj, file, **kwargs) or
+             save_fn(obj, fname, **kwargs).
+    """
+    return _trial.save(obj=obj, obj_name=obj_name, iteration=iteration,
+                       save_fn=save_fn, **kwargs)
+
+
 def metric(*, iteration=None, **kwargs):
     """Applies Trial.metric to the trial in the current context."""
     return _trial.metric(iteration=iteration, **kwargs)
+
+
+def load(obj_name, iteration=None, load_fn=pickle.load, **kwargs):
+    """
+    Loads the persisted object of the given type for the corresponding
+    iteration. If iteration is not specified, it will load the most recent one.
+
+    obj_name: the obj_name set up in track.save for the type of object to
+              be saved.
+
+    load_fn: expected signature is load_fn(fname, **kwargs)
+             or load_fn(file, **kwargs)
+    """
+    return _trial.load(obj_name=obj_name, iteration=iteration,
+                       load_fn=load_fn, **kwargs)
+
 
 def trial_dir():
     """Retrieves the trial directory for the trial in the current context."""
     return _trial.trial_dir()
 
+
 __all__ = ["Trial", "Project", "trial", "absl_flags", "debug", "metric",
-           "trial_dir"]
+           "save", "load", "trial_dir"]
