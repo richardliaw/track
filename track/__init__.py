@@ -16,23 +16,16 @@ name = 'track-ml'
 # a thread-local stack. Def doable but annoying.
 _trial = None
 
-# TODO: make this (or Trial) an actual context manager class
-# so we can properly detect if an exception was thrown,
-# in which case the fact that we errored can get logged
-# appropriately (i.e., don't close cleanly).
-# TODO: simplify API: only need one of track() or Trial()
-# I like the idea of not having a trial object at all that
-# the user ever deals with, and instead keeping everything
-# implicit.
-@contextmanager
-def trial(log_dir=None,
-          upload_dir=None,
-          sync_period=None,
-          trial_prefix="",
-          param_map=None,
-          init_logging=True):
+
+def init(log_dir=None,
+         upload_dir=None,
+         sync_period=None,
+         trial_prefix="",
+         param_map=None,
+         init_logging=True):
     """
-    Generates a trial within a with context.
+    Initializes the global trial context for this process.
+    This creates a Trial object and the corresponding hooks for logging.
     """
     global _trial  # pylint: disable=global-statement
     if _trial:
@@ -50,10 +43,21 @@ def trial(log_dir=None,
     try:
         _trial = local_trial
         _trial.start()
-        yield local_trial
     finally:
         _trial = None
         local_trial.close()
+
+
+def shutdown():
+    """
+    Cleans up the trial and removes it from the global context.
+    """
+    global _trial  # pylint: disable=global-statement
+    if not _trial:
+        raise ValueError("Tried to stop trial, but no trial exists")
+    _trial.close()
+    _trial = None
+
 
 def metric(*, iteration=None, **kwargs):
     """Applies Trial.metric to the trial in the current context."""
