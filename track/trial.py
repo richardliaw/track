@@ -129,7 +129,15 @@ class Trial(object):
         for hook in self._hooks:
             hook.on_result(new_args)
 
-    def save(self, obj, obj_name, iteration=None, save_fn=pickle.dump,
+    def _get_fname(self, result_name, iteration=None):
+        fname = os.path.join(self.artifact_dir, result_name)
+        if iteration is None:
+            iteration = self.param_map["max_iteration"]
+        base, file_extension = os.path.splittext(fname)
+        result = base + "_" + str(iteration) + file_extension
+        return result
+
+    def save(self, obj, result_name, iteration=None, save_fn=pickle.dump,
              **kwargs):
         """
         Persists the object of the given type. If iteration is not specified
@@ -137,28 +145,29 @@ class Trial(object):
 
         obj: the python object to persist.
 
-        obj_name: a string corresponding to the name/type of object to be saved.
+        result_name: a string corresponding to the name/type of object to be saved.
                   for example, obj_name="model" for persisting the current
                   iterate's model to disk.
 
         save_fn: expected signature is save_fn(obj, file, **kwargs) or
                  save_fn(obj, fname, **kwargs).
         """
+        fname = self._get_fname(result_name, iteration=iteration)
+        return save_fn(result, fname, **kwargs)
 
-        pass
-
-    def load(obj_name, iteration=None, load_fn=pickle.load, **kwargs):
+    def load(result_name, iteration=None, load_fn=pickle.load, **kwargs):
         """
         Loads the persisted object of the given type for the corresponding
         iteration. If iteration is not specified, it will load the most recent one.
 
-        obj_name: the obj_name set up in track.save for the type of object to
+        result_name: the obj_name set up in track.save for the type of object to
                   be saved.
 
         load_fn: expected signature is load_fn(fname, **kwargs)
                  or load_fn(file, **kwargs)
         """
-        pass
+        fname = self._get_fname(result_name, iteration=iteration)
+        return load_fn(fname, **kwargs)
 
     def trial_dir(self):
         """returns the local file path to the trial's artifact directory"""

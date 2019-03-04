@@ -5,6 +5,7 @@ from __future__ import print_function
 import json
 import numpy as np
 import os
+import pickle
 import yaml
 
 from track.constants import CONFIG_SUFFIX, RESULT_SUFFIX
@@ -116,7 +117,6 @@ def to_tf_values(result, path):
             elif type(value) is dict:
                 values.extend(to_tf_values(value, path + [attr]))
     return values
-
 
 
 class _CustomEncoder(json.JSONEncoder):
