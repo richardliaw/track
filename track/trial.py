@@ -1,7 +1,7 @@
 import os
 import pickle
-from track.logger import UnifiedLogger
-from track.sync import SyncHook
+from ray.tune.logger import UnifiedLogger, Logger
+# from track.sync import SyncHook
 import uuid
 from datetime import datetime
 from .autodetect import (
@@ -28,6 +28,14 @@ def flatten_dict(dt):
         for k in remove:
             del dt[k]
     return dt
+
+
+class _ReporterHook(Logger):
+    def __init__(self, reporter):
+        self.reporter = reporter
+
+    def on_result(self, **metrics):
+        return reporter(**metrics)
 
 
 class Trial(object):
@@ -104,25 +112,20 @@ class Trial(object):
         return log.TrackLogHandler(
             os.path.join(self.artifact_dir, 'log.txt'))
 
-    def start(self):
+    def start(self, reporter=None):
         for path in [self.base_dir, self.data_dir, self.artifact_dir]:
             if not os.path.exists(path):
                 os.makedirs(path)
 
-        self._logger = UnifiedLogger(
-            self.param_map,
-            self.data_dir,
-            filename_prefix=self.trial_id + "_")
         self._hooks = []
-        self._hooks.append(self._logger)
-
-        if self.upload_dir:
-            # note weird interaction here if user edits an artifact,
-            # that would eventually get synced.
-            self._hooks.append(SyncHook(
-                self.base_dir,
-                remote_dir=self.upload_dir,
-                sync_period=self._sync_period))
+        if not reporter:
+            self._hooks += [UnifiedLogger(
+                self.param_map,
+                self.data_dir,
+                self.upload_dir,
+                filename_prefix=self.trial_id + "_")]
+        else:
+            self._hooks += [_ReporterHook(reporter)]
 
     def metric(self, *, iteration=None, **kwargs):
         """
