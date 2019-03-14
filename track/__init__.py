@@ -23,7 +23,8 @@ def init(log_dir=None,
          sync_period=None,
          trial_prefix="",
          param_map=None,
-         init_logging=True):
+         init_logging=True,
+         tune_reporter=None):
     """
     Initializes the global trial context for this process.
     This creates a Trial object and the corresponding hooks for logging.
@@ -40,7 +41,8 @@ def init(log_dir=None,
         sync_period=sync_period,
         trial_prefix=trial_prefix,
         param_map=param_map,
-        init_logging=True)
+        init_logging=True,
+        reporter=tune_reporter)
     # try:
     _trial = local_trial
     _trial.start()

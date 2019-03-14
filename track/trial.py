@@ -34,8 +34,8 @@ class _ReporterHook(Logger):
     def __init__(self, reporter):
         self.reporter = reporter
 
-    def on_result(self, **metrics):
-        return reporter(**metrics)
+    def on_result(self, metrics):
+        return self.reporter(**metrics)
 
 
 class Trial(object):
@@ -64,7 +64,8 @@ class Trial(object):
                  sync_period=None,
                  trial_prefix="",
                  param_map=None,
-                 init_logging=True):
+                 init_logging=True,
+                 reporter=None):
         if log_dir is None:
             log_dir = dfl_local_dir()
              # TODO should probably check if this exists and whether
@@ -96,8 +97,9 @@ class Trial(object):
         self.param_map["invocation"] = invocation()
         self.param_map["max_iteration"] = -1
         self.param_map["trial_completed"] = False
+        self.reporter = reporter
 
-        if init_logging:
+        if not self.reporter and init_logging:
             log.init(self.logging_handler())
             log.debug("(re)initilized logging")
 
@@ -112,20 +114,19 @@ class Trial(object):
         return log.TrackLogHandler(
             os.path.join(self.artifact_dir, 'log.txt'))
 
-    def start(self, reporter=None):
+    def start(self):
         for path in [self.base_dir, self.data_dir, self.artifact_dir]:
             if not os.path.exists(path):
                 os.makedirs(path)
 
         self._hooks = []
-        if not reporter:
+        if not self.reporter:
             self._hooks += [UnifiedLogger(
                 self.param_map,
                 self.data_dir,
-                self.upload_dir,
-                filename_prefix=self.trial_id + "_")]
+                self.upload_dir)]
         else:
-            self._hooks += [_ReporterHook(reporter)]
+            self._hooks += [_ReporterHook(self.reporter)]
 
     def metric(self, *, iteration=None, **kwargs):
         """
@@ -137,7 +138,8 @@ class Trial(object):
             iteration (int): current iteration of the trial.
             **kwargs: named arguments with corresponding values to log.
         """
-        new_args = flatten_dict(kwargs)
+        # new_args = flatten_dict(kwargs)
+        new_args = kwargs
         new_args.update({"iteration": iteration})
         new_args.update({"trial_id": self.trial_id})
         if iteration is not None:
@@ -195,7 +197,7 @@ class Trial(object):
     def close(self):
         self.param_map["trial_completed"] = True
         self.param_map["end_time"] = datetime.now().isoformat()
-        self._logger.update_config(self.param_map)
+        # self._logger.update_config(self.param_map)
 
         for hook in self._hooks:
             hook.close()
