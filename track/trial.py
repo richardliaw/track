@@ -44,6 +44,11 @@ class Trial(object):
 
     init_logging will automatically set up a logger at the debug level,
     along with handlers to print logs to stdout and to a persistent store.
+
+    Arguments:
+        log_dir (str): base log directory in which the results for all trials
+                       are stored. if not specified, uses autodetect.dfl_local_dir()
+        upload_dir (str):
     """
     def __init__(self,
                  log_dir=None,
@@ -120,6 +125,15 @@ class Trial(object):
                 sync_period=self._sync_period))
 
     def metric(self, *, iteration=None, **kwargs):
+        """
+        Logs all named arguments specified in **kwargs.
+        This will log trial metrics locally, and they will be synchronized
+        with the driver periodically through ray.
+
+        Arguments:
+            iteration (int): current iteration of the trial.
+            **kwargs: named arguments with corresponding values to log.
+        """
         new_args = flatten_dict(kwargs)
         new_args.update({"iteration": iteration})
         new_args.update({"trial_id": self.trial_id})
@@ -139,17 +153,17 @@ class Trial(object):
 
     def save(self, result, result_name, save_fn, iteration=None, **kwargs):
         """
-        Persists the object of the given type. If iteration is not specified
-        and a file already exists, it will override the previously saved object.
+        Persists a result to disk as an artifact. These results will be
+        synchronized with the driver periodically through ray.
 
-        result: the python object to persist.
-
-        result_name: a string corresponding to the name/type of object to be saved.
-                  for example, obj_name="model" for persisting the current
-                  iterate's model to disk.
-
-        save_fn: expected signature is save_fn(obj, file, **kwargs) or
-                 save_fn(obj, fname, **kwargs).
+        Arguments:
+            result (object): the python object to persist to disk.
+            result_fname (str): base filename for the object, e.g. "model.ckpt"
+            save_fn (function): function to save out the object. called as
+                                "save_fn(obj, fname, **kwargs)"
+            iteration (int): the current iteration of the trial. If not
+                             specified, overrides the previously saved file.
+                             otherwise, creates a new object for each iter.
         """
         fname = self._get_fname(result_name, iteration=iteration)
         return save_fn(result, fname, **kwargs)
@@ -157,13 +171,16 @@ class Trial(object):
     def load(self, result_name, load_fn, iteration=None, **kwargs):
         """
         Loads the persisted object of the given type for the corresponding
-        iteration. If iteration is not specified, it will load the most recent one.
+        iteration.
 
-        result_name: the obj_name set up in track.save for the type of object to
-                  be saved.
+        Arguments:
+            result_name (str): base filename for the object as supplied to
+                               Trial.save
+            load_fn (function): function to load the object from disk. called
+                               as "load_fn(fname, **kwargs)"
+           iteration (int): iteration of trial to load from. If not specified,
+                            track will load the most recent file.
 
-        load_fn: expected signature is load_fn(fname, **kwargs)
-                 or load_fn(file, **kwargs)
         """
         fname = self._get_fname(result_name, iteration=iteration)
         return load_fn(fname, **kwargs)
