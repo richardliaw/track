@@ -12,6 +12,7 @@ from . import constants
 from .autodetect import dfl_local_dir
 from .sync import S3_PREFIX, GCS_PREFIX, check_remote_util
 
+
 class Project(object):
     """
     The project class manages all trials that have been run with the given
@@ -58,12 +59,12 @@ class Project(object):
             # TODO constants should just contain the recipes for filename
             # construction instead of this multi-file implicit constraint
             result_file = os.path.join(
-                metadata_folder, trial_id + "_" + constants.RESULT_SUFFIX)
+                metadata_folder, trial_id + "_" + constants.RESULT_SUFFIX
+            )
             assert os.path.isfile(result_file), result_file
-            dfs.append(pd.read_json(result_file, typ='frame', lines=True))
+            dfs.append(pd.read_json(result_file, typ="frame", lines=True))
         df = pd.concat(dfs, axis=0, ignore_index=True, sort=False)
         return df
-
 
     def fetch_artifact(self, trial_id, prefix):
         """
@@ -81,14 +82,14 @@ class Project(object):
         # worries me
         local = os.path.join(self.log_dir, trial_id, prefix)
         if self.upload_dir:
-            remote = '/'.join([self.upload_dir, trial_id, prefix])
+            remote = "/".join([self.upload_dir, trial_id, prefix])
             _remote_to_local_sync(remote, local)
         return local
 
     def _sync_metadata(self):
         local = os.path.join(self.log_dir, constants.METADATA_FOLDER)
         if self.upload_dir:
-            remote = '/'.join([self.upload_dir, constants.METADATA_FOLDER])
+            remote = "/".join([self.upload_dir, constants.METADATA_FOLDER])
             _remote_to_local_sync(remote, local)
 
     def _load_metadata(self):
@@ -98,19 +99,26 @@ class Project(object):
             if not trial_file.endswith(constants.CONFIG_SUFFIX):
                 continue
             trial_file = os.path.join(metadata_folder, trial_file)
-            rows.append(pd.read_json(trial_file, typ='frame', lines=True))
+            rows.append(
+                pd.read_json(
+                    trial_file, typ="frame", lines=True, dtype={"trial_id": str}
+                )
+            )
         return pd.concat(rows, axis=0, ignore_index=True, sort=False)
+
 
 def _remote_to_local_sync(remote, local):
     # TODO: at some point look up whether sync will clobber newer
     # local files and do this more delicately
     if remote.startswith(S3_PREFIX):
-        remote_to_local_sync_cmd = ("aws s3 sync {} {}".format(
-            quote(remote), quote(local)))
+        remote_to_local_sync_cmd = "aws s3 sync {} {}".format(
+            quote(remote), quote(local)
+        )
     elif remote.startswith(GCS_PREFIX):
-        remote_to_local_sync_cmd = ("gsutil rsync -r {} {}".format(
-            quote(remote), quote(local)))
+        remote_to_local_sync_cmd = "gsutil rsync -r {} {}".format(
+            quote(remote), quote(local)
+        )
     else:
-        raise ValueError('unhandled remote uri {}'.format(remote))
+        raise ValueError("unhandled remote uri {}".format(remote))
     print("Running log sync: {}".format(remote_to_local_sync_cmd))
     subprocess.check_call(remote_to_local_sync_cmd, shell=True)

@@ -18,14 +18,19 @@ import json
 import sys
 import logging
 
+
 class TrackLogHandler(logging.FileHandler):
     """File-based logging handler for the track package"""
+
     pass
+
 
 class StdoutHandler(logging.StreamHandler):
     """As described by the name"""
+
     def __init__(self):
         super().__init__(sys.stdout)
+
 
 def init(track_log_handler):
     """
@@ -56,6 +61,7 @@ def init(track_log_handler):
     logger.propagate = False
     logger.setLevel(logging.DEBUG)
 
+
 def debug(s, *args):
     """debug(s, x1, ..., xn) logs s.format(x1, ..., xn)."""
     # Get the path name and line number of the function which called us.
@@ -68,13 +74,14 @@ def debug(s, *args):
         if os.path.commonprefix([cwd, pathname]) == cwd:
             pathname = os.path.relpath(pathname, cwd)
     except Exception:  # pylint: disable=broad-except
-        pathname = '<UNKNOWN-FILE>.py'
+        pathname = "<UNKNOWN-FILE>.py"
         lineno = 0
-    if _FORMATTER: # log could have not been initialized.
+    if _FORMATTER:  # log could have not been initialized.
         _FORMATTER.pathname = pathname
         _FORMATTER.lineno = lineno
     logger = logging.getLogger(__package__)
     logger.debug(s.format(*args))
+
 
 class _StackCrawlingFormatter(logging.Formatter):
     """
@@ -98,10 +105,11 @@ class _StackCrawlingFormatter(logging.Formatter):
     def format(self, record):
         s = super().format(record)
         if self.pathname is not None:
-            s = s.replace('{pathname}', self.pathname)
+            s = s.replace("{pathname}", self.pathname)
         if self.lineno is not None:
-            s = s.replace('{lineno}', str(self.lineno))
+            s = s.replace("{lineno}", str(self.lineno))
         return s
+
 
 _FORMAT_STRING = "[%(asctime)-15s {pathname}:{lineno}] %(message)s"
 _FORMATTER = _StackCrawlingFormatter(_FORMAT_STRING)

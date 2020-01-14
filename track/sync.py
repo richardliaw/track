@@ -19,22 +19,23 @@ ALLOWED_REMOTE_PREFIXES = (S3_PREFIX, GCS_PREFIX)
 
 
 def check_remote_util(remote_dir):
-    if not any(
-            remote_dir.startswith(prefix)
-            for prefix in ALLOWED_REMOTE_PREFIXES):
-        raise TrackError("Upload uri must start with one of: {}"
-                         "".format(ALLOWED_REMOTE_PREFIXES))
+    if not any(remote_dir.startswith(prefix) for prefix in ALLOWED_REMOTE_PREFIXES):
+        raise TrackError(
+            "Upload uri must start with one of: {}" "".format(ALLOWED_REMOTE_PREFIXES)
+        )
 
-    if (remote_dir.startswith(S3_PREFIX)
-            and not distutils.spawn.find_executable("aws")):
+    if remote_dir.startswith(S3_PREFIX) and not distutils.spawn.find_executable("aws"):
         raise TrackError(
             "Upload uri starting with '{}' requires awscli tool"
-            " to be installed".format(S3_PREFIX))
-    elif (remote_dir.startswith(GCS_PREFIX)
-          and not distutils.spawn.find_executable("gsutil")):
+            " to be installed".format(S3_PREFIX)
+        )
+    elif remote_dir.startswith(GCS_PREFIX) and not distutils.spawn.find_executable(
+        "gsutil"
+    ):
         raise TrackError(
             "Upload uri starting with '{}' requires gsutil tool"
-            " to be installed".format(GCS_PREFIX))
+            " to be installed".format(GCS_PREFIX)
+        )
 
 
 class _LogSyncer(object):
@@ -61,11 +62,13 @@ class _LogSyncer(object):
         local_to_remote_sync_cmd = None
         if self.remote_dir:
             if self.remote_dir.startswith(S3_PREFIX):
-                local_to_remote_sync_cmd = ("aws s3 sync {} {}".format(
-                    quote(self.local_dir), quote(self.remote_dir)))
+                local_to_remote_sync_cmd = "aws s3 sync {} {}".format(
+                    quote(self.local_dir), quote(self.remote_dir)
+                )
             elif self.remote_dir.startswith(GCS_PREFIX):
-                local_to_remote_sync_cmd = ("gsutil rsync -r {} {}".format(
-                    quote(self.local_dir), quote(self.remote_dir)))
+                local_to_remote_sync_cmd = "gsutil rsync -r {} {}".format(
+                    quote(self.local_dir), quote(self.remote_dir)
+                )
 
         if self.sync_process:
             self.sync_process.poll()

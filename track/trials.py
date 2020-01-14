@@ -39,30 +39,36 @@ import pandas as pd
 
 from . import Project
 
-flags.DEFINE_string("local_dir", None,
-                          "the local directory where trials are stored "
-                          "for default behavior see "
-                          "track.autodetect.dfl_local_dir")
-flags.DEFINE_string("remote_dir", None,
-                          "the remote directory where trials are stored")
+flags.DEFINE_string(
+    "local_dir",
+    None,
+    "the local directory where trials are stored "
+    "for default behavior see "
+    "track.autodetect.dfl_local_dir",
+)
+flags.DEFINE_string("remote_dir", None, "the remote directory where trials are stored")
+
 
 def compare(c, l, r):
-    if c == '=':
+    if c == "=":
         return l == r
-    elif c == '<':
+    elif c == "<":
         return l < r
-    elif c == '>':
+    elif c == ">":
         return l > r
     else:
-        raise ValueError('unknown operator ' + c)
+        raise ValueError("unknown operator " + c)
+
 
 def _drop_first_two_words(sentence):
-    remain = sentence.partition(' ')[2]
-    return remain.partition(' ')[2]
+    remain = sentence.partition(" ")[2]
+    return remain.partition(" ")[2]
+
 
 def _parse_pandas(lit):
     df = pd.read_json('{{"0": "{}"}}'.format(lit), typ="series")
     return df[0]
+
 
 def _main(argv):
     proj = Project(flags.FLAGS.local_dir, flags.FLAGS.remote_dir)
@@ -71,7 +77,7 @@ def _main(argv):
     argv = argv[1:]
     cols = []
     df = proj.ids
-    conds = '<>='
+    conds = "<>="
     for arg in argv:
         if not any(c in arg for c in conds):
             cols.append(arg)
@@ -88,10 +94,12 @@ def _main(argv):
     df["invocation"] = df["invocation"].map(_drop_first_two_words)
     if not cols:
         cols = ["trial_id", "start_time", "git_pretty"]
-    print(df[cols].to_string(
-        index=False, justify='left',
-        formatters={x: formatter for x in dt_cols}))
+    print(
+        df[cols].to_string(
+            index=False, justify="left", formatters={x: formatter for x in dt_cols}
+        )
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(_main)

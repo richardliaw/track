@@ -54,11 +54,13 @@ class UnifiedLogger(Logger):
     """Unified result logger for TensorBoard, rllab/viskit, plain json.
 
     This class also periodically syncs output to the given upload uri."""
+
     def _init(self):
         self._loggers = {}
         for cls in [_JsonLogger]:
-            self._loggers[cls.__name__] = cls(self.config, self.logdir,
-                                              self.filename_prefix, self.uri)
+            self._loggers[cls.__name__] = cls(
+                self.config, self.logdir, self.filename_prefix, self.uri
+            )
         self.update_config(self.config)
 
     def on_result(self, result):
@@ -73,8 +75,7 @@ class UnifiedLogger(Logger):
         self.config = config
         for logger in self._loggers.values():
             logger.config = config
-        config_out = os.path.join(
-            self.logdir, self.filename_prefix + CONFIG_SUFFIX)
+        config_out = os.path.join(self.logdir, self.filename_prefix + CONFIG_SUFFIX)
         with open(config_out, "w") as f:
             json.dump(self.config, f, sort_keys=True, cls=_CustomEncoder)
 
@@ -86,8 +87,7 @@ class NoopLogger(Logger):
 
 class _JsonLogger(Logger):
     def _init(self):
-        local_file = os.path.join(self.logdir,
-                                  self.filename_prefix + RESULT_SUFFIX)
+        local_file = os.path.join(self.logdir, self.filename_prefix + RESULT_SUFFIX)
         self.local_out = open(local_file, "w")
 
     def on_result(self, result):
@@ -111,12 +111,11 @@ def to_tf_values(result, path):
         if value is not None:
             if type(value) in [int, float]:
                 values.append(
-                    tf.Summary.Value(
-                        tag="/".join(path + [attr]), simple_value=value))
+                    tf.Summary.Value(tag="/".join(path + [attr]), simple_value=value)
+                )
             elif type(value) is dict:
                 values.extend(to_tf_values(value, path + [attr]))
     return values
-
 
 
 class _CustomEncoder(json.JSONEncoder):
@@ -134,9 +133,17 @@ class _CustomEncoder(json.JSONEncoder):
             return repr(o) if not np.isnan(o) else nan_str
 
         _iterencode = json.encoder._make_iterencode(
-            None, self.default, _encoder, self.indent, floatstr,
-            self.key_separator, self.item_separator, self.sort_keys,
-            self.skipkeys, _one_shot)
+            None,
+            self.default,
+            _encoder,
+            self.indent,
+            floatstr,
+            self.key_separator,
+            self.item_separator,
+            self.sort_keys,
+            self.skipkeys,
+            _one_shot,
+        )
         return _iterencode(o, 0)
 
     def default(self, value):
