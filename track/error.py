@@ -5,4 +5,5 @@ from __future__ import print_function
 
 class TrackError(Exception):
     """General error class raised by Track"""
+
     pass

@@ -7,6 +7,7 @@ sensible default way from commonly used libraries.
 import sys
 from absl import flags
 
+
 def absl_flags():
     """
     Extracts absl-py flags that the user has specified and outputs their
@@ -26,6 +27,10 @@ def absl_flags():
         if module_name == sys.argv[0]:
             return True
         return False
+
     return {
-        flag.name: flag.value for module, flags in flags_dict.items()
-        for flag in flags if _relevant_module(module)}
+        flag.name: flag.value
+        for module, flags in flags_dict.items()
+        for flag in flags
+        if _relevant_module(module)
+    }

@@ -6,8 +6,7 @@ import subprocess
 import uuid
 import shutil
 from datetime import datetime
-from .autodetect import (
-    git_repo, dfl_local_dir, git_hash, invocation, git_pretty)
+from .autodetect import git_repo, dfl_local_dir, git_hash, invocation, git_pretty
 from .constants import METADATA_FOLDER, RESULT_SUFFIX
 from . import log
 
@@ -31,6 +30,7 @@ def flatten_dict(dt):
             del dt[k]
     return dt
 
+
 class Trial(object):
     """
     Trial attempts to infer the local log_dir and remote upload_dir
@@ -46,20 +46,23 @@ class Trial(object):
     init_logging will automatically set up a logger at the debug level,
     along with handlers to print logs to stdout and to a persistent store.
     """
-    def __init__(self,
-                 log_dir=None,
-                 upload_dir=None,
-                 sync_period=None,
-                 trial_prefix="",
-                 param_map=None,
-                 init_logging=True):
+
+    def __init__(
+        self,
+        log_dir=None,
+        upload_dir=None,
+        sync_period=None,
+        trial_prefix="",
+        param_map=None,
+        init_logging=True,
+    ):
         if log_dir is None:
             log_dir = dfl_local_dir()
-             # TODO should probably check if this exists and whether
-             # we'll be clobbering anything in either the artifact dir
-             # or the metadata dir, idk what the probability is that a
-             # uuid truncation will get duplicated. Then also maybe
-             # the same thing for the remote dir.
+            # TODO should probably check if this exists and whether
+            # we'll be clobbering anything in either the artifact dir
+            # or the metadata dir, idk what the probability is that a
+            # uuid truncation will get duplicated. Then also maybe
+            # the same thing for the remote dir.
 
         base_dir = os.path.expanduser(log_dir)
         self.base_dir = base_dir
@@ -89,8 +92,6 @@ class Trial(object):
             log.init(self.logging_handler())
             log.debug("(re)initilized logging")
 
-
-
     def logging_handler(self):
         """
         For advanced logging setups, returns a file-based log handler
@@ -99,8 +100,7 @@ class Trial(object):
         If you use init_logging = True there is no need to call this
         method.
         """
-        return log.TrackLogHandler(
-            os.path.join(self.artifact_dir, 'log.txt'))
+        return log.TrackLogHandler(os.path.join(self.artifact_dir, "log.txt"))
 
     def start(self):
         for path in [self.base_dir, self.data_dir, self.artifact_dir]:
@@ -108,19 +108,21 @@ class Trial(object):
                 os.makedirs(path)
 
         self._logger = UnifiedLogger(
-            self.param_map,
-            self.data_dir,
-            filename_prefix=self.trial_id + "_")
+            self.param_map, self.data_dir, filename_prefix=self.trial_id + "_"
+        )
         self._hooks = []
         self._hooks.append(self._logger)
 
         if self.upload_dir:
             # note weird interaction here if user edits an artifact,
             # that would eventually get synced.
-            self._hooks.append(SyncHook(
-                self.base_dir,
-                remote_dir=self.upload_dir,
-                sync_period=self._sync_period))
+            self._hooks.append(
+                SyncHook(
+                    self.base_dir,
+                    remote_dir=self.upload_dir,
+                    sync_period=self._sync_period,
+                )
+            )
 
     def metric(self, *, iteration=None, **kwargs):
         new_args = flatten_dict(kwargs)
@@ -128,7 +130,8 @@ class Trial(object):
         new_args.update({"trial_id": self.trial_id})
         if iteration is not None:
             self.param_map["max_iteration"] = max(
-                self.param_map["max_iteration"], iteration)
+                self.param_map["max_iteration"], iteration
+            )
         for hook in self._hooks:
             hook.on_result(new_args)
 

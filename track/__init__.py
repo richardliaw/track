@@ -6,7 +6,7 @@ from .log import debug
 from .convenience import absl_flags
 
 
-name = 'track-ml'
+name = "track-ml"
 
 # TODO: note that this might get icky when the user
 # forks or uses multiple threads. The latter can be
@@ -25,12 +25,14 @@ _trial = None
 # the user ever deals with, and instead keeping everything
 # implicit.
 @contextmanager
-def trial(log_dir=None,
-          upload_dir=None,
-          sync_period=None,
-          trial_prefix="",
-          param_map=None,
-          init_logging=True):
+def trial(
+    log_dir=None,
+    upload_dir=None,
+    sync_period=None,
+    trial_prefix="",
+    param_map=None,
+    init_logging=True,
+):
     """
     Generates a trial within a with context.
     """
@@ -46,7 +48,8 @@ def trial(log_dir=None,
         sync_period=sync_period,
         trial_prefix=trial_prefix,
         param_map=param_map,
-        init_logging=True)
+        init_logging=True,
+    )
     try:
         _trial = local_trial
         _trial.start()
@@ -55,13 +58,15 @@ def trial(log_dir=None,
         _trial = None
         local_trial.close()
 
+
 def metric(*, iteration=None, **kwargs):
     """Applies Trial.metric to the trial in the current context."""
     return _trial.metric(iteration=iteration, **kwargs)
+
 
 def trial_dir():
     """Retrieves the trial directory for the trial in the current context."""
     return _trial.trial_dir()
 
-__all__ = ["Trial", "Project", "trial", "absl_flags", "debug", "metric",
-           "trial_dir"]
+
+__all__ = ["Trial", "Project", "trial", "absl_flags", "debug", "metric", "trial_dir"]
